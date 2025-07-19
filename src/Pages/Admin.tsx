@@ -6,8 +6,8 @@ import { Container } from '../Components/Container';
 // import { generateClient } from '@aws-amplify/api';
 // import { PrimaryButton } from '../Components/Buttons';
 
-import { Authenticator } from "@aws-amplify/ui-react";
-import "@aws-amplify/ui-react/styles.css";
+// import { Authenticator } from "@aws-amplify/ui-react";
+// import "@aws-amplify/ui-react/styles.css";
 
 // const client = generateClient<Schema>();
 
@@ -23,9 +23,9 @@ function Admin() {
     return (
         <Container>
             <Header />
-            <Authenticator>
+            {/* <Authenticator> */}
                 {/* <PrimaryButton onClick={sayHello}>Say Hello</PrimaryButton> */}
-            </Authenticator>
+            {/* </Authenticator> */}
             <Footer />
         </Container>
     )
