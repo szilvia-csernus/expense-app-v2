@@ -6,20 +6,64 @@ adding a new "isDone" field as a boolean. The authorization rule below
 specifies that any unauthenticated user can "create", "read", "update", 
 and "delete" any "Todo" records.
 =========================================================================*/
-const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization((allow) => [allow.guest()]),
-});
+// const schema = a.schema({
+//   Todo: a
+//     .model({
+//       content: a.string(),
+//     })
+//     .authorization((allow) => [allow.guest()]),
+// });
+
+// export type Schema = ClientSchema<typeof schema>;
+
+// export const data = defineData({
+//   schema,
+//   authorizationModes: {
+//     defaultAuthorizationMode: 'identityPool',
+//   },
+// });
+
+const schema = a
+  .schema({
+    Church: a
+      .model({
+        churchId: a.id().required(),
+        shortName: a.string(),
+        longName: a.string(),
+        logo: a.url(),
+        claimsCounter: a.integer(),
+        financeContactName: a.string(),
+        financeEmail: a.email(),
+        costPurposes: a.hasMany("CostPurpose", "churchId"),
+      })
+      .identifier(["churchId"]),
+    CostPurpose: a
+      .model({
+        costPurposeId: a.id().required(),
+        name: a.string(),
+        costCode: a.integer(),
+        churchId: a.string(),
+        church: a.belongsTo("Church", "churchId"),
+      })
+      .identifier(["costPurposeId"]),
+  })
+  .authorization((allow) => [allow.publicApiKey()]);
+
+// const schema = a.schema({
+//   sayHello: a.query().arguments({
+//     name: a.string()
+//   }).returns(a.string()).
+//   handler(a.handler.function(sayHello))
+//   .authorization((allow) => [allow.publicApiKey()]),
+// });
 
 export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'identityPool',
+    defaultAuthorizationMode: "apiKey",
+    apiKeyAuthorizationMode: { expiresInDays: 30 }
   },
 });
 
