@@ -16,8 +16,8 @@ const Backdrop = () => {
 	const dispatch = useAppDispatch();
 	
 	const clickHandler = () => {
-		thankYouMessage && dispatch(thankYouMessageActions.close());
-		errorMessage && dispatch(errorMessageActions.close());
+		if (thankYouMessage) dispatch(thankYouMessageActions.close());
+		if (errorMessage) dispatch(errorMessageActions.close());
 	};
 
 	return <div className={classes.backdrop} onClick={clickHandler}/>;

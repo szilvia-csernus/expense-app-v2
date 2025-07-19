@@ -1,7 +1,7 @@
 import classes from './Form.module.css';
 import { DeleteButton } from './Buttons';
 import { useAppSelector } from '../store/index';
-import { Dispatch, SetStateAction, useEffect, useId } from 'react';
+import { type Dispatch, type SetStateAction, useEffect, useId } from 'react';
 
 type FileUploaderType = {
 	selectedFile: File | null;
