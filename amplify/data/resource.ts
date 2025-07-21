@@ -25,27 +25,27 @@ and "delete" any "Todo" records.
 
 const schema = a
   .schema({
-    Church: a
+    ExpenseApp: a
       .model({
-        churchId: a.id().required(),
+        PK: a.string().required(), // Partition Key: e.g. CHURCH#1
+        SK: a.string().required(), // Sort Key: e.g. PROFILE or COSTPURPOSE#22
+        __typename: a.string().required(), // "Church" or "CostPurpose"
+        // Church fields
+        churchId: a.string(),
         shortName: a.string(),
         longName: a.string(),
         logo: a.url(),
         claimsCounter: a.integer(),
         financeContactName: a.string(),
         financeEmail: a.email(),
-        costPurposes: a.hasMany("CostPurpose", "churchId"),
-      })
-      .identifier(["churchId"]),
-    CostPurpose: a
-      .model({
-        costPurposeId: a.id().required(),
+        // CostPurpose fields
+        costPurposeId: a.string(),
         name: a.string(),
         costCode: a.integer(),
-        churchId: a.string(),
-        church: a.belongsTo("Church", "churchId"),
+        // Foreign key
+        churchId_fk: a.string(),
       })
-      .identifier(["costPurposeId"]),
+      .identifier(["PK", "SK"]),
   })
   .authorization((allow) => [allow.publicApiKey()]);
 
