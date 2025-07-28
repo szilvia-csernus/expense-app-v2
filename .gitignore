@@ -33,3 +33,4 @@ data-preparation/
 .amplify
 amplify_outputs*
 amplifyconfiguration*
+.env
