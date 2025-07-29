@@ -23,9 +23,9 @@ function Admin() {
     return (
         <Container>
             <Header />
-            {/* <Authenticator> */}
-                {/* <PrimaryButton onClick={sayHello}>Say Hello</PrimaryButton> */}
-            {/* </Authenticator> */}
+            {/* <Authenticator>
+                <PrimaryButton onClick={sayHello}>Say Hello</PrimaryButton>
+            </Authenticator> */}
             <Footer />
         </Container>
     )
