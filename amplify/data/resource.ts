@@ -1,4 +1,5 @@
-import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { sendExpenseForm } from "../functions/sendExpenseForm/resource";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -29,25 +30,29 @@ const schema = a
       .model({
         PK: a.string().required(), // Partition Key: e.g. CHURCH#1
         SK: a.string().required(), // Sort Key: e.g. PROFILE or COSTPURPOSE#22
-        __typename: a.string().required(), // "Church" or "CostPurpose"
-        // Church fields
-        churchId: a.string(),
-        shortName: a.string(),
-        longName: a.string(),
+        churchShortName: a.string(),
+        churchLongName: a.string(),
         logo: a.url(),
         claimsCounter: a.integer(),
         financeContactName: a.string(),
         financeEmail: a.email(),
-        // CostPurpose fields
-        costPurposeId: a.string(),
-        name: a.string(),
+        costPurposeName: a.string(),
         costCode: a.integer(),
-        // Foreign key
-        churchId_fk: a.string(),
       })
-      .identifier(["PK", "SK"]),
+      .identifier(["PK", "SK"])
+      .authorization((allow) => [allow.guest()]),
+
+    sendExpenseForm: a
+      .query()
+      .arguments({
+        formData: a.json(),
+        churchPK: a.string().required(),
+      })
+      .returns(a.json())
+      .authorization((allow) => [allow.guest()])
+      .handler(a.handler.function(sendExpenseForm)),
   })
-  .authorization((allow) => [allow.publicApiKey()]);
+  .authorization((allow) => [allow.guest()]);
 
 // const schema = a.schema({
 //   sayHello: a.query().arguments({
@@ -62,8 +67,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "apiKey",
-    apiKeyAuthorizationMode: { expiresInDays: 30 }
+    defaultAuthorizationMode: "identityPool",
   },
 });
 
