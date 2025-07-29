@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '../store/index';
 import Modal from './Modal';
 import { churchActions } from '../store/church-slice';
 import Loader from './Loader';
+import { getChurchPK } from '../store/church-action-creators';
 
 const SelectChurch = () => {
 	const churches = useAppSelector((state) => state.church.churches);
@@ -12,7 +13,9 @@ const SelectChurch = () => {
 
 	const clickHandler = (event: React.MouseEvent<HTMLButtonElement>) => {
 		const target = event.target as HTMLElement;
-		dispatch(churchActions.setChurch(target.innerText));
+		const churchName = target.innerText;
+		const churchPK = getChurchPK(dispatch, target.innerText);
+		dispatch(churchActions.setChurch({ name: churchName, churchPK: churchPK }));
 		dispatch(churchActions.close());
 	};
 	return (
