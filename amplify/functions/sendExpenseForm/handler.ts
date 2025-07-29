@@ -2,7 +2,6 @@ import type { Schema } from "../../data/resource";
 import { Amplify } from "aws-amplify";
 import config from "../../../amplify_outputs.json";
 import { generateClient } from "aws-amplify/api";
-import * as nodemailer from "nodemailer";
 import {
   generateMainMessage,
   generateMessageToSubmitter,
@@ -10,11 +9,9 @@ import {
   generateReplyTemplate,
 } from "./generateMessages";
 
-import type { ExpenseFormData, EmailAttachment } from "./types";
+import type { ExpenseFormData } from "./types";
 import { generateAttachment } from "./generateAttachment";
-
-const EMAIL_HOST_USER = process.env.EMAIL_HOST_USER;
-const EMAIL_HOST_PASS = process.env.EMAIL_HOST_PASS;
+import { sendEmail } from "./sendEmail";
 
 export const handler: Schema["sendExpenseForm"]["functionHandler"] = async (
   event
@@ -22,11 +19,6 @@ export const handler: Schema["sendExpenseForm"]["functionHandler"] = async (
   console.log("Received event:", JSON.stringify(event, null, 2));
 
   Amplify.configure(config);
-
-  console.log("Environment check:", {
-    EMAIL_HOST_USER: EMAIL_HOST_USER ? "SET" : "NOT SET",
-    EMAIL_HOST_PASS: EMAIL_HOST_PASS ? "SET" : "NOT SET",
-  });
 
   // Create a client
   const client = generateClient<Schema>();
@@ -186,44 +178,4 @@ function validateForm(formData: ExpenseFormData): boolean {
   }
 
   return true;
-}
-
-// Create a nodemailer transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: EMAIL_HOST_USER,
-    pass: EMAIL_HOST_PASS,
-  },
-});
-
-// Send email using nodemailer
-async function sendEmail(
-  from: string,
-  to: string,
-  subject: string,
-  body: string,
-  attachment: EmailAttachment | null
-) {
-  // Create email options
-  const mailOptions: nodemailer.SendMailOptions = {
-    from,
-    to,
-    subject,
-    text: body,
-  };
-
-  // Add attachment if provided
-  if (attachment) {
-    mailOptions.attachments = [
-      {
-        filename: attachment.filename,
-        content: Buffer.from(attachment.content, "base64"),
-        contentType: attachment.contentType,
-      },
-    ];
-  }
-
-  // Send the email
-  return transporter.sendMail(mailOptions);
 }
