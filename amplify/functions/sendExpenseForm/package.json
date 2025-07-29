@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "dependencies": {
+    "nodemailer": "^7.0.5",
+    "pdf-lib": "^1.17.1"
+  }
+}
