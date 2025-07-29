@@ -1,12 +1,11 @@
 import { Link } from "react-router-dom";
 
 function Footer() {
-	return (
+  return (
     <footer>
       <p>©{new Date().getFullYear()} Expense App</p>
       <p>All rights reserved.</p>
 
-      <p>Powered by React and Amplify</p>
       <Link to="/admin">Admin login</Link>
     </footer>
   );
