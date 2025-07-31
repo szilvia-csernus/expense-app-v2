@@ -1,6 +1,7 @@
 import { centerImageOnPage, processAndResizeImage } from "./processImage";
 import type { ExpenseFormData, Church } from "./types";
 import * as PDFLib from "pdf-lib";
+import { downloadFileAsBuffer } from "./downloadFileAsBuffer";
 
 async function downloadAndEmbedLogo(
   pdfDoc: PDFLib.PDFDocument,
@@ -65,16 +66,16 @@ export async function generateAttachment(
           height: logoHeight,
         });
 
-        yPosition -= 20; // Space after logo
+        yPosition -= 30; // Space after logo
       }
     }
 
     // Main title (matching h1 style)
-    page.drawText(`EXPENSE FORM - ${counter}`, {
+    page.drawText(`Expense Form - ${counter}`, {
       x: 50,
       y: yPosition,
-      size: 15,
-      font: regularFont,
+      size: 16,
+      font: boldFont,
       color: textColor,
     });
 
@@ -150,22 +151,21 @@ export async function generateAttachment(
     drawField("Name of Bank Account Holder (if different)", form.accountName);
 
     // Process receipts on separate pages
-    for (const receiptData of form.receipts) {
-      try {
-        if (receiptData.startsWith("data:image")) {
-          const base64Data = receiptData.split(",")[1];
-          const imageBuffer = Buffer.from(base64Data, "base64");
+    for (const receiptUrl of form.receipts) {
+      const { buffer, contentType } = await downloadFileAsBuffer(receiptUrl);
 
+      try {
+        if (contentType.startsWith("image/")) {
           // Process and resize image intelligently
           const result = await processAndResizeImage(
             pdfDoc,
-            imageBuffer,
-            receiptData
+            buffer,
+            contentType
           );
 
           if (!result) {
             console.error("Failed to process image, skipping...");
-            continue;
+            throw new Error("Image processing failed");
           }
 
           const { img, dims } = result;
@@ -183,26 +183,14 @@ export async function generateAttachment(
             width: dims.width,
             height: dims.height,
           });
-
-          // Optional: Add a subtle border around images for better presentation
-          newPage.drawRectangle({
-            x: position.x - 2,
-            y: position.y - 2,
-            width: dims.width + 4,
-            height: dims.height + 4,
-            borderColor: PDFLib.rgb(0.9, 0.9, 0.9),
-            borderWidth: 1,
-          });
-        } else if (receiptData.startsWith("data:application/pdf")) {
+        } else if (contentType === "application/pdf") {
           // PDF processing remains the same
-          const base64Data = receiptData.split(",")[1];
-          const pdfBuffer = Buffer.from(base64Data, "base64");
-          const receiptPdf = await PDFLib.PDFDocument.load(pdfBuffer);
+          const receiptPdf = await PDFLib.PDFDocument.load(buffer);
           const copiedPages = await pdfDoc.copyPages(
             receiptPdf,
             receiptPdf.getPageIndices()
           );
-          copiedPages.forEach((page) => pdfDoc.addPage(page));
+          copiedPages.forEach((page: PDFLib.PDFPage) => pdfDoc.addPage(page));
         }
       } catch (error) {
         console.error(`Error processing receipt:`, error);
