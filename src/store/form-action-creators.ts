@@ -1,4 +1,5 @@
 import { generateClient } from "aws-amplify/data";
+import { uploadData } from "aws-amplify/storage";
 import type { Schema } from "../../amplify/data/resource";
 import { errorMessageActions } from "./error-message-slice";
 import { thankYouMessageActions } from "./thank-you-message-slice";
@@ -109,14 +110,22 @@ export const send = async (
       }
     }
 
-    // Process file objects - convert to dataURLs
+    // Process file objects
     for (const [key, value] of formData.entries()) {
+      let i = 1;
       if (value instanceof File) {
         try {
           // Convert file to dataURL
-          const dataURL = await convertToDataURL(value);
+          // const dataURL = await convertToDataURL(value);
           // Add to receiptsArray
-          receiptsArray.push(dataURL);
+          // receiptsArray.push(dataURL);
+
+          const response = uploadData({
+            path: `receipts/${Date.now()}-${i++}`,
+            data: value,
+          });
+
+          receiptsArray.push((await response.result).path);
         } catch (error) {
           console.error(`Error converting file ${key} to dataURL:`, error);
           wrongImageError(dispatch);
