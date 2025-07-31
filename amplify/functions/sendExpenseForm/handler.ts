@@ -1,6 +1,7 @@
 import type { Schema } from "../../data/resource";
+import { getAmplifyDataClientConfig } from "@aws-amplify/backend/function/runtime";
+import { env } from "$amplify/env/sendExpenseForm";
 import { Amplify } from "aws-amplify";
-import config from "../../../amplify_outputs.json";
 import { generateClient } from "aws-amplify/api";
 import {
   generateMainMessage,
@@ -18,7 +19,10 @@ export const handler: Schema["sendExpenseForm"]["functionHandler"] = async (
 ) => {
   console.log("Received event:", JSON.stringify(event, null, 2));
 
-  Amplify.configure(config);
+  const { resourceConfig, libraryOptions } =
+    await getAmplifyDataClientConfig(env);
+
+  Amplify.configure(resourceConfig, libraryOptions);
 
   // Create a client
   const client = generateClient<Schema>();
@@ -146,7 +150,7 @@ export const handler: Schema["sendExpenseForm"]["functionHandler"] = async (
     }
   } catch (error) {
     console.error("Error processing form:", error);
-    return error || "500 - Internal Server Error";
+    throw error;
   }
 };
 
