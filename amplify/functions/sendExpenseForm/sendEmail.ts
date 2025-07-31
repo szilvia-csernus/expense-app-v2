@@ -18,6 +18,8 @@ export async function sendEmail(
 ) {
   const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
 
+  console.log("GMAIL CLIENT ID SET:", process.env.GMAIL_CLIENT_ID);
+
   const messageParts = [
     `From: ${from}`,
     `To: ${to}`,
