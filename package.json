@@ -12,7 +12,9 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
     "aws-amplify": "^6.15.3",
+    "googleapis": "^154.1.0",
     "js-cookie": "^3.0.5",
+    "pdf-lib": "^1.17.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^9.2.0",
