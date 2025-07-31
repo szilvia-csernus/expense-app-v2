@@ -49,10 +49,12 @@ const schema = a
         churchPK: a.string().required(),
       })
       .returns(a.json())
-      .authorization((allow) => [allow.guest()])
       .handler(a.handler.function(sendExpenseForm)),
   })
-  .authorization((allow) => [allow.guest()]);
+  .authorization((allow) => [
+    allow.guest(),
+    allow.resource(sendExpenseForm).to(["query", "mutate"]),
+  ]);
 
 // const schema = a.schema({
 //   sayHello: a.query().arguments({
