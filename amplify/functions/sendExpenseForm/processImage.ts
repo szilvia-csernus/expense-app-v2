@@ -1,25 +1,25 @@
-import * as PDFLib from "pdf-lib";
+import { PDFDocument, PDFImage, PDFPage } from "pdf-lib";
 
 export async function processAndResizeImage(
-  pdfDoc: PDFLib.PDFDocument,
+  pdfDoc: PDFDocument,
   imageBuffer: Buffer,
-  receiptData: string
+  contentType: string
 ): Promise<{
-  img: PDFLib.PDFImage;
+  img: PDFImage;
   dims: { width: number; height: number };
 } | null> {
   try {
     let img;
 
-    // Detect and embed image format
-    if (receiptData.startsWith("data:image/png")) {
+    console.log(`Processing image with content type: ${contentType}`);
+
+    // Detect and embed image format based on content type
+    if (contentType.includes("png")) {
       img = await pdfDoc.embedPng(imageBuffer);
-    } else if (
-      receiptData.startsWith("data:image/jpeg") ||
-      receiptData.startsWith("data:image/jpg")
-    ) {
+    } else if (contentType.includes("jpeg") || contentType.includes("jpg")) {
       img = await pdfDoc.embedJpg(imageBuffer);
     } else {
+      // Try JPG first, then PNG as fallback
       try {
         img = await pdfDoc.embedJpg(imageBuffer);
       } catch {
@@ -73,7 +73,7 @@ export async function processAndResizeImage(
 }
 
 export function centerImageOnPage(
-  page: PDFLib.PDFPage,
+  page: PDFPage,
   imgWidth: number,
   imgHeight: number
 ): { x: number; y: number } {
