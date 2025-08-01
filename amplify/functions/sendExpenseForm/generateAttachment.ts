@@ -1,12 +1,9 @@
 import { centerImageOnPage, processAndResizeImage } from "./processImage";
 import type { ExpenseFormData, Church } from "./types";
-import * as PDFLib from "pdf-lib";
+import { PDFDocument, StandardFonts, PDFPage, rgb } from "pdf-lib";
 import { downloadFileAsBuffer } from "./downloadFileAsBuffer";
 
-async function downloadAndEmbedLogo(
-  pdfDoc: PDFLib.PDFDocument,
-  logoUrl: string
-) {
+async function downloadAndEmbedLogo(pdfDoc: PDFDocument, logoUrl: string) {
   try {
     const response = await fetch(logoUrl);
     if (!response.ok) {
@@ -36,20 +33,20 @@ export async function generateAttachment(
   counter: number
 ): Promise<Buffer | null> {
   try {
-    const pdfDoc = await PDFLib.PDFDocument.create();
+    const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage();
     const { height, width } = page.getSize();
 
     // Load fonts
-    const regularFont = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-    const boldFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+    const regularFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
     // Space on top
     let yPosition = height - 80;
 
     // Colors
-    const textColor = PDFLib.rgb(0.3, 0.3, 0.3);
-    const borderColor = PDFLib.rgb(0.8, 0.8, 0.8); // rgb(204, 204, 204)
+    const textColor = rgb(0.3, 0.3, 0.3);
+    const borderColor = rgb(0.8, 0.8, 0.8); // rgb(204, 204, 204)
 
     // Add logo if available
     if (churchData.logo) {
@@ -151,11 +148,19 @@ export async function generateAttachment(
     drawField("Name of Bank Account Holder (if different)", form.accountName);
 
     // Process receipts on separate pages
-    for (const receiptUrl of form.receipts) {
-      const { buffer, contentType } = await downloadFileAsBuffer(receiptUrl);
-
+    console.log(`Processing ${form.receipts.length} receipt(s)...`);
+    
+    for (let i = 0; i < form.receipts.length; i++) {
+      const receiptPath = form.receipts[i];
+      console.log(`Processing receipt ${i + 1}/${form.receipts.length}: ${receiptPath}`);
+      
       try {
+        const { buffer, contentType } = await downloadFileAsBuffer(receiptPath);
+        console.log(`Downloaded receipt: ${buffer.length} bytes, type: ${contentType}`);
+
         if (contentType.startsWith("image/")) {
+          console.log("Processing as image...");
+          
           // Process and resize image intelligently
           const result = await processAndResizeImage(
             pdfDoc,
@@ -165,16 +170,19 @@ export async function generateAttachment(
 
           if (!result) {
             console.error("Failed to process image, skipping...");
-            throw new Error("Image processing failed");
+            continue;
           }
 
           const { img, dims } = result;
+          console.log(`Image processed successfully: ${dims.width}x${dims.height}`);
 
           // Create new page for the image
           const newPage = pdfDoc.addPage();
+          console.log("Created new page for image");
 
           // Center the image on the page
           const position = centerImageOnPage(newPage, dims.width, dims.height);
+          console.log(`Positioning image at: ${position.x}, ${position.y}`);
 
           // Draw the image with calculated dimensions and position
           newPage.drawImage(img, {
@@ -183,23 +191,35 @@ export async function generateAttachment(
             width: dims.width,
             height: dims.height,
           });
+          
+          console.log("Image drawn on page successfully");
+          
         } else if (contentType === "application/pdf") {
+          console.log("Processing as PDF...");
+          
           // PDF processing remains the same
-          const receiptPdf = await PDFLib.PDFDocument.load(buffer);
+          const receiptPdf = await PDFDocument.load(buffer);
           const copiedPages = await pdfDoc.copyPages(
             receiptPdf,
             receiptPdf.getPageIndices()
           );
-          copiedPages.forEach((page: PDFLib.PDFPage) => pdfDoc.addPage(page));
+          copiedPages.forEach((page: PDFPage) => pdfDoc.addPage(page));
+          
+          console.log("PDF pages added successfully");
+        } else {
+          console.warn(`Unsupported content type: ${contentType}`);
         }
       } catch (error) {
-        console.error(`Error processing receipt:`, error);
+        console.error(`Error processing receipt ${receiptPath}:`, error);
         // Continue with next receipt instead of returning null
         continue;
       }
     }
 
+    console.log("Saving PDF document...");
     const pdfBytes = await pdfDoc.save();
+    console.log(`PDF generated successfully: ${pdfBytes.length} bytes`);
+    
     return Buffer.from(pdfBytes);
   } catch (error) {
     console.error("Error generating PDF:", error);
