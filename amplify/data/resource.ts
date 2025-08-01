@@ -40,7 +40,7 @@ const schema = a
         costCode: a.integer(),
       })
       .identifier(["PK", "SK"])
-      .authorization((allow) => [allow.guest()]),
+      .authorization((allow) => [allow.publicApiKey()]),
 
     sendExpenseForm: a
       .query()
@@ -52,7 +52,7 @@ const schema = a
       .handler(a.handler.function(sendExpenseForm)),
   })
   .authorization((allow) => [
-    allow.guest(),
+    allow.publicApiKey(),
     allow.resource(sendExpenseForm).to(["query", "mutate"]),
   ]);
 
@@ -69,7 +69,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "identityPool",
+    defaultAuthorizationMode: "apiKey",
   },
 });
 
