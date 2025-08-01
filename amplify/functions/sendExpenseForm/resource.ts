@@ -11,6 +11,6 @@ export const sendExpenseForm = defineFunction({
     AMPLIFY_DATA_DEFAULT_NAME: "main",
     // We'll add the storage bucket name via backend configuration
   },
-  runtime: 20, // Use Node.js 20 runtime
+  runtime: 22, // Use Node.js 22 runtime
   resourceGroupName: "storage", // assign to the storage to avoid circular dependencies
 });
