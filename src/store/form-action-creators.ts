@@ -102,38 +102,27 @@ export const send = async (
     // Create receipts array
     const receiptsArray: string[] = [];
 
-    // Process standard form fields
-    for (const [key, value] of formData.entries()) {
-      // Skip file objects, we'll handle them below
-      if (!(value instanceof File)) {
-        formDataObj[key] = value;
-      }
-    }
-
-    // Process file objects
+    // Process form fields
     for (const [key, value] of formData.entries()) {
       let i = 1;
       if (value instanceof File) {
         try {
-          // Convert file to dataURL
-          // const dataURL = await convertToDataURL(value);
-          // Add to receiptsArray
-          // receiptsArray.push(dataURL);
-
-          const response = uploadData({
+          const uploadResponse = uploadData({
             path: `receipts/${Date.now()}-${i++}`,
             data: value,
           });
 
-          receiptsArray.push((await response.result).path);
+          receiptsArray.push((await uploadResponse.result).path);
         } catch (error) {
-          console.error(`Error converting file ${key} to dataURL:`, error);
+          console.error(`Error processing file ${key}:`, error);
           wrongImageError(dispatch);
           return;
         }
+      } else {
+        // Handle non-file values
+        formDataObj[key] = value;
       }
     }
-
     // Add receipts array to form values
     formDataObj.receipts = receiptsArray;
 
@@ -149,19 +138,19 @@ export const send = async (
     console.log("Sending formData:", JSON.stringify(formDataObj));
 
     const client = generateClient<Schema>();
-    const response = await client.queries.sendExpenseForm({
+    const sendFormResponse = await client.queries.sendExpenseForm({
       formData: JSON.stringify(formDataObj),
       churchPK: churchPK,
     });
 
-    if (response.data) {
+    if (sendFormResponse.data) {
       dispatch(costFormActions.resetSending());
       dispatch(thankYouMessageActions.open());
       callAfterTimeout(dispatch, thankYouMessageActions.close);
       resetForm();
-    } else if (response.errors && response.errors.length > 0) {
+    } else if (sendFormResponse.errors && sendFormResponse.errors.length > 0) {
       // Check if any error message contains the 406 status code
-      const hasImageError = response.errors.some(
+      const hasImageError = sendFormResponse.errors.some(
         (error) =>
           error.message?.includes("406") ||
           (error.extensions?.code as string)?.includes("406")
