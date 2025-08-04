@@ -4,26 +4,10 @@ import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
 
 const ssmClient = new SSMClient({ region: process.env.AWS_REGION });
 
-// Cache credentials to avoid repeated API calls
-let cachedCredentials: {
-  client_id: string;
-  client_secret: string;
-  refresh_token: string;
-} | null = null;
-
 // Load Gmail credentials from Parameter Store using the parameter names from environment variables
 async function loadGmailCredentials() {
-  if (cachedCredentials) {
-    return cachedCredentials;
-  }
-
   try {
     console.log("Loading Gmail credentials from Parameter Store...");
-    console.log("Parameter names:", {
-      clientId: process.env.GMAIL_CLIENT_ID,
-      clientSecret: process.env.GMAIL_CLIENT_SECRET,
-      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-    });
 
     const [clientIdResult, clientSecretResult, refreshTokenResult] =
       await Promise.all([
@@ -48,14 +32,14 @@ async function loadGmailCredentials() {
       );
     }
 
-    cachedCredentials = {
+    const credentials = {
       client_id: clientIdResult.Parameter.Value,
       client_secret: clientSecretResult.Parameter.Value,
       refresh_token: refreshTokenResult.Parameter.Value,
     };
 
     console.log("Gmail credentials loaded successfully from Parameter Store");
-    return cachedCredentials;
+    return credentials;
   } catch (error) {
     console.error(
       "Error loading Gmail credentials from Parameter Store:",
@@ -70,7 +54,8 @@ export async function sendEmail(
   to: string,
   subject: string,
   body: string,
-  attachment: EmailAttachment | null
+  attachment: EmailAttachment | null,
+  replyTo: string
 ) {
   // Load credentials from Parameter Store
   const credentials = await loadGmailCredentials();
@@ -88,13 +73,14 @@ export async function sendEmail(
   const messageParts = [
     `From: ${from}`,
     `To: ${to}`,
+    `Reply-To: ${replyTo}`,
     `Subject: ${subject}`,
     "MIME-Version: 1.0",
   ];
 
   if (attachment) {
     // With attachment
-    const boundary = "boundary_" + Math.random().toString(36).substr(2, 9);
+    const boundary = "boundary_" + Math.random().toString(36).slice(2, 11);
     messageParts.push(`Content-Type: multipart/mixed; boundary="${boundary}"`);
     messageParts.push("");
     messageParts.push(`--${boundary}`);
