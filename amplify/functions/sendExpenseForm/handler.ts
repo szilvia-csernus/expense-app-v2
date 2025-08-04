@@ -17,8 +17,6 @@ import { sendEmail } from "./sendEmail";
 export const handler: Schema["sendExpenseForm"]["functionHandler"] = async (
   event
 ) => {
-  console.log("Received event:", JSON.stringify(event, null, 2));
-
   const { resourceConfig, libraryOptions } =
     await getAmplifyDataClientConfig(env);
 
@@ -113,7 +111,8 @@ export const handler: Schema["sendExpenseForm"]["functionHandler"] = async (
         formData.email,
         `Expense Form ${churchData.claimsCounter} ${formData.description} ${formData.purpose}`,
         messageToSubmitter,
-        null
+        null,
+        churchData.financeEmail
       );
 
       // Email to finance team
@@ -126,7 +125,8 @@ export const handler: Schema["sendExpenseForm"]["functionHandler"] = async (
           filename: `EF${churchData.claimsCounter}.pdf`,
           content: pdfBuffer.toString("base64"),
           contentType: "application/pdf",
-        }
+        },
+        formData.email
       );
 
       // Email template back to finance team
@@ -135,7 +135,8 @@ export const handler: Schema["sendExpenseForm"]["functionHandler"] = async (
         churchData.financeEmail,
         `Expense Form ${churchData.claimsCounter} ${formData.description} ${formData.purpose}`,
         messageTemplate,
-        null
+        null,
+        formData.email
       );
 
       console.log(`Email sent for expense form ${churchData.claimsCounter}`);
