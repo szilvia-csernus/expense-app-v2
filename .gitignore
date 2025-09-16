@@ -34,3 +34,10 @@ data-preparation/
 amplify_outputs*
 amplifyconfiguration*
 .env
+.env.local
+.env.production
+
+# Gmail API
+*/**/client_secret*
+token.json
+credentials.json
