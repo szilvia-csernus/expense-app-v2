@@ -1,0 +1,58 @@
+import type { APIGatewayProxyEvent } from "aws-lambda";
+import { ReceiptBuffer } from "./types";
+
+export async function parseMultipart(
+  event: APIGatewayProxyEvent
+): Promise<{ fields: Record<string, string>; receipts: ReceiptBuffer[] }> {
+  const headers = event.headers || {};
+  const contentType = headers["content-type"] || headers["Content-Type"];
+  if (!contentType || !contentType.includes("multipart/form-data")) {
+    throw new Error("Content-Type must be multipart/form-data");
+  }
+
+  const body = Buffer.from(
+    event.body ?? "",
+    event.isBase64Encoded ? "base64" : "utf8"
+  );
+
+  if (body.length === 0) {
+    throw new Error("Request body is empty");
+  }
+
+  // Build a Request so we can use the FormData API to parse it
+  const req = new Request("http://local", {
+    method: "POST",
+    headers: { "content-type": contentType },
+    body,
+  });
+
+  if (!req.body) {
+    throw new Error("Request body is null");
+  }
+
+  const formData = await req.formData();
+
+  if (!formData) {
+    throw new Error("FormData is null");
+  }
+
+  console.log("FormData entries:", Array.from(formData.entries()));
+
+  const fields: Record<string, string> = {};
+  const receipts: ReceiptBuffer[] = [];
+
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === "string") {
+      fields[key] = value;
+    } else {
+      const ab = await value.arrayBuffer();
+      receipts.push({
+        buffer: Buffer.from(ab),
+        mimetype: value.type,
+        filename: value.name,
+      });
+    }
+  }
+
+  return { fields, receipts };
+}
