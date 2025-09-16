@@ -1,5 +1,5 @@
 import { auth, gmail } from "@googleapis/gmail";
-import type { EmailAttachment } from "./types";
+import type { Church, EmailAttachment, ExpenseFormData } from "./types";
 import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
 
 const ssmClient = new SSMClient({ region: process.env.AWS_REGION });
@@ -49,7 +49,12 @@ async function loadGmailCredentials() {
   }
 }
 
-export async function sendEmail(
+async function sendEmail(
+  credentials: {
+    client_id: string;
+    client_secret: string;
+    refresh_token: string;
+  },
   from: string,
   to: string,
   subject: string,
@@ -57,9 +62,6 @@ export async function sendEmail(
   attachment: EmailAttachment | null,
   replyTo: string
 ) {
-  // Load credentials from Parameter Store
-  const credentials = await loadGmailCredentials();
-
   // Set up OAuth2 client
   const oAuth2Client = new auth.OAuth2(
     credentials.client_id,
@@ -122,5 +124,66 @@ export async function sendEmail(
   } catch (error) {
     console.error("Error sending email:", error);
     throw error;
+  }
+}
+
+export async function sendEmails(
+  churchData: Church,
+  formData: ExpenseFormData,
+  messageToSubmitter: string,
+  messageToFinance: string,
+  messageTemplate: string,
+  pdfBuffer: Buffer
+) {
+  // Load credentials from Parameter Store
+  const credentials = await loadGmailCredentials();
+  // Send emails
+  try {
+    // Email to submitter
+    await sendEmail(
+      credentials,
+      churchData.financeEmail,
+      formData.email,
+      `Expense Form ${churchData.claimsCounter} ${formData.description} ${formData.purpose}`,
+      messageToSubmitter,
+      null,
+      churchData.financeEmail
+    );
+
+    // Email to finance team
+    await sendEmail(
+      credentials,
+      churchData.financeEmail,
+      churchData.financeEmail,
+      `EF ${churchData.claimsCounter} ${formData.description} ${formData.purpose}`,
+      messageToFinance,
+      {
+        filename: `EF${churchData.claimsCounter}.pdf`,
+        content: pdfBuffer.toString("base64"),
+        contentType: "application/pdf",
+      },
+      formData.email
+    );
+
+    // Email template back to finance team
+    await sendEmail(
+      credentials,
+      churchData.financeEmail,
+      churchData.financeEmail,
+      `Expense Form ${churchData.claimsCounter} ${formData.description} ${formData.purpose}`,
+      messageTemplate,
+      null,
+      formData.email
+    );
+
+    console.log(`Email sent for expense form ${churchData.claimsCounter}`);
+
+    return JSON.stringify({
+      statusCode: 200,
+      message: "Form submitted successfully",
+    });
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new Error("406 - Error sending email. Please try again.");
   }
 }
