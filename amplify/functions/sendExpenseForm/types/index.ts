@@ -1,3 +1,9 @@
+export interface ReceiptBuffer {
+  buffer: Buffer<ArrayBufferLike>;
+  mimetype: string;
+  filename: string;
+}
+
 export interface ExpenseFormData {
   name: string;
   email: string;
@@ -7,16 +13,15 @@ export interface ExpenseFormData {
   total: string;
   iban?: string | null;
   accountName?: string | null;
-  church: string;
-  receipts: string[]; // string values are data URLs
 }
 
 export interface Church {
-  financeEmail: string | null;
-  financeContactName: string | null;
-  churchLongName: string | null;
-  claimsCounter: number | null;
-  logo: string | null;
+  financeEmail: string;
+  financeContactName: string;
+  churchShortName: string;
+  churchLongName: string;
+  claimsCounter: number;
+  logo: string;
 }
 
 export interface EmailAttachment {
