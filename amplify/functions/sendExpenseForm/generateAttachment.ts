@@ -1,7 +1,6 @@
 import { centerImageOnPage, processAndResizeImage } from "./processImage";
-import type { ExpenseFormData, Church } from "./types";
+import type { ExpenseFormData, Church, ReceiptBuffer } from "./types";
 import { PDFDocument, StandardFonts, PDFPage, rgb } from "pdf-lib";
-import { downloadFileAsBuffer } from "./downloadFileAsBuffer";
 
 async function downloadAndEmbedLogo(pdfDoc: PDFDocument, logoUrl: string) {
   try {
@@ -29,6 +28,7 @@ async function downloadAndEmbedLogo(pdfDoc: PDFDocument, logoUrl: string) {
 // Generate PDF attachment with form data and receipts
 export async function generateAttachment(
   form: ExpenseFormData,
+  receipts: ReceiptBuffer[],
   churchData: Church,
   counter: number
 ): Promise<Buffer | null> {
@@ -134,7 +134,7 @@ export async function generateAttachment(
 
     // EXPENSES section
     drawSectionHeader("EXPENSES");
-    drawField("Church", form.church);
+    drawField("Church", churchData.churchShortName || "N/A");
     drawField("Purpose", form.purpose);
     drawField("Date of expense (on receipt)", form.date);
     drawField("Description", form.description);
@@ -148,19 +148,23 @@ export async function generateAttachment(
     drawField("Name of Bank Account Holder (if different)", form.accountName);
 
     // Process receipts on separate pages
-    console.log(`Processing ${form.receipts.length} receipt(s)...`);
-    
-    for (let i = 0; i < form.receipts.length; i++) {
-      const receiptPath = form.receipts[i];
-      console.log(`Processing receipt ${i + 1}/${form.receipts.length}: ${receiptPath}`);
-      
+    console.log(`Processing ${receipts.length} receipt(s)...`);
+
+    for (let i = 0; i < receipts.length; i++) {
+      const receipt = receipts[i];
+      console.log(`Processing receipt ${i + 1}/${receipts.length}`);
+
       try {
-        const { buffer, contentType } = await downloadFileAsBuffer(receiptPath);
-        console.log(`Downloaded receipt: ${buffer.length} bytes, type: ${contentType}`);
+        const buffer = receipt.buffer;
+        const contentType = receipt.mimetype || "image/jpeg";
+
+        console.log(
+          `Downloaded receipt: ${buffer.length} bytes, type: ${contentType}`
+        );
 
         if (contentType.startsWith("image/")) {
           console.log("Processing as image...");
-          
+
           // Process and resize image intelligently
           const result = await processAndResizeImage(
             pdfDoc,
@@ -169,12 +173,13 @@ export async function generateAttachment(
           );
 
           if (!result) {
-            console.error("Failed to process image, skipping...");
-            continue;
+            throw new Error("Image processing failed - possibly too large");
           }
 
           const { img, dims } = result;
-          console.log(`Image processed successfully: ${dims.width}x${dims.height}`);
+          console.log(
+            `Image processed successfully: ${dims.width}x${dims.height}`
+          );
 
           // Create new page for the image
           const newPage = pdfDoc.addPage();
@@ -191,12 +196,11 @@ export async function generateAttachment(
             width: dims.width,
             height: dims.height,
           });
-          
+
           console.log("Image drawn on page successfully");
-          
         } else if (contentType === "application/pdf") {
           console.log("Processing as PDF...");
-          
+
           // PDF processing remains the same
           const receiptPdf = await PDFDocument.load(buffer);
           const copiedPages = await pdfDoc.copyPages(
@@ -204,13 +208,13 @@ export async function generateAttachment(
             receiptPdf.getPageIndices()
           );
           copiedPages.forEach((page: PDFPage) => pdfDoc.addPage(page));
-          
+
           console.log("PDF pages added successfully");
         } else {
           console.warn(`Unsupported content type: ${contentType}`);
         }
       } catch (error) {
-        console.error(`Error processing receipt ${receiptPath}:`, error);
+        console.error(`Error processing receipt ${i + 1}:`, error);
         // Continue with next receipt instead of returning null
         continue;
       }
@@ -219,7 +223,7 @@ export async function generateAttachment(
     console.log("Saving PDF document...");
     const pdfBytes = await pdfDoc.save();
     console.log(`PDF generated successfully: ${pdfBytes.length} bytes`);
-    
+
     return Buffer.from(pdfBytes);
   } catch (error) {
     console.error("Error generating PDF:", error);
