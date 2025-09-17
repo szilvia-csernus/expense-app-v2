@@ -5,12 +5,11 @@ export const sendExpenseForm = defineFunction({
   name: "sendExpenseForm",
   // optional - defaults to "./handler.ts" anyway
   entry: "./handler.ts",
-  timeoutSeconds: 30, // Increase from 3s to 30s
-  memoryMB: 512, // Increase memory
+  timeoutSeconds: 60,
+  memoryMB: 512, // Increased memory neccessary for image and pdf processing
   environment: {
     AMPLIFY_DATA_DEFAULT_NAME: "main",
-    // We'll add the storage bucket name via backend configuration
   },
   runtime: 22, // Use Node.js 22 runtime
-  resourceGroupName: "storage", // assign to the storage to avoid circular dependencies
+  resourceGroupName: "data", // assign to the data stack to avoid circular dependencies
 });
