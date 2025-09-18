@@ -10,60 +10,62 @@ const schema = a
           .required()
           .authorization((allow) => [
             allow.publicApiKey().to(["read", "update"]),
+            allow.authenticated().to(["read", "update"]),
           ]),
         SK: a // Sort Key: e.g. PROFILE or COSTPURPOSE#22
           .string()
           .required()
           .authorization((allow) => [
             allow.publicApiKey().to(["read", "update"]),
+            allow.authenticated().to(["read", "update"]),
           ]),
         churchShortName: a
           .string()
           .authorization((allow) => [
             allow.publicApiKey().to(["read"]),
-            allow.authenticated().to(["update"]),
+            allow.authenticated().to(["read", "update"]),
           ]),
         churchLongName: a
           .string()
           .authorization((allow) => [
             allow.publicApiKey().to(["read"]),
-            allow.authenticated().to(["update"]),
+            allow.authenticated().to(["read", "update"]),
           ]),
         logo: a
           .url()
           .authorization((allow) => [
             allow.publicApiKey().to(["read"]),
-            allow.authenticated().to(["update"]),
+            allow.authenticated().to(["read", "update"]),
           ]),
         claimsCounter: a
           .integer()
           .authorization((allow) => [
             allow.publicApiKey().to(["read", "update"]),
-            allow.authenticated().to(["update"]),
+            allow.authenticated().to(["read", "update"]),
           ]),
         financeContactName: a
           .string()
           .authorization((allow) => [
             allow.publicApiKey().to(["read"]),
-            allow.authenticated().to(["update"]),
+            allow.authenticated().to(["read", "update"]),
           ]),
         financeEmail: a
           .email()
           .authorization((allow) => [
             allow.publicApiKey().to(["read"]),
-            allow.authenticated().to(["update"]),
+            allow.authenticated().to(["read", "update"]),
           ]),
         costPurposeName: a
           .string()
           .authorization((allow) => [
             allow.publicApiKey().to(["read"]),
-            allow.authenticated().to(["update"]),
+            allow.authenticated().to(["read", "update"]),
           ]),
         costCode: a
           .integer()
           .authorization((allow) => [
             allow.publicApiKey().to(["read"]),
-            allow.authenticated().to(["update"]),
+            allow.authenticated().to(["read", "update"]),
           ]),
       })
       .identifier(["PK", "SK"])
