@@ -1,8 +1,8 @@
 import { defineFunction } from "@aws-amplify/backend";
 
-export const sendExpenseForm = defineFunction({
+export const sendExpenseFormFunction = defineFunction({
   // optional - defaults to directory name anyway
-  name: "sendExpenseForm",
+  name: "sendExpenseFormFunction",
   // optional - defaults to "./handler.ts" anyway
   entry: "./handler.ts",
   timeoutSeconds: 60,
