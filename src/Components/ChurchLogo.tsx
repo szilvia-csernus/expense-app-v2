@@ -1,21 +1,20 @@
 import classes from "./Form.module.css";
 
 import { useAppSelector } from "../store";
+import { StorageImage } from "@aws-amplify/ui-react-storage";
 
 const ChurchLogo = () => {
-  const churchName = useAppSelector((state) => state.church.churchName);
   const churchLogo = useAppSelector((state) => state.church.logo);
 
-  const logo = (
-    <img
-      src={churchLogo}
-      width="270"
-      height="80"
+  return (
+    <StorageImage
+      path={churchLogo || "logos/rotterdamLogo_default.png"}
+      fallbackSrc="logos/rotterdamLogo_default.png"
       className={classes.churchLogo}
       alt="church logo"
-    ></img>
+      style={{ height: "60px", width: "auto" }}
+    />
   );
-  return <>{churchName && logo}</>;
 };
 
 export default ChurchLogo;
