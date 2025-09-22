@@ -1,12 +1,23 @@
-import { Link } from "react-router-dom";
+import React from "react";
+import classes from "./Footer.module.css";
+// import logoUrl from "../images/expLogo.png";
 
-function Footer() {
+function Footer({ children }: { children?: React.ReactNode }) {
   return (
     <footer>
       <p>©{new Date().getFullYear()} Expense App</p>
-      <p>All rights reserved.</p>
+      <div className={classes.separator}></div>
+      <div>
+        {/* <img
+          src={logoUrl}
+          width="20"
+          height="20"
+          className={classes.logo}
+          alt="app logo"
+        ></img> */}
+      </div>
 
-      <Link to="/admin">Admin login</Link>
+      {children}
     </footer>
   );
 }
