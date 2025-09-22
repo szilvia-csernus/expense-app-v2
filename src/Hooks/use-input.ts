@@ -1,36 +1,42 @@
 import { useState } from "react";
 
-export type ValidateType = (arg: string) => boolean;
+export type ValidateInput = (arg: string) => boolean;
 
-const useInput = (validateInput: ValidateType) => {
+type UseInput = {
+  validateInput: ValidateInput;
+  initialValue?: string;
+};
 
-    const [enteredValue, setEnteredValue] = useState('');
-    const [isTouched, setIsTouched] = useState(false);
+const useInput = ({ validateInput, initialValue = "" }: UseInput) => {
+  const [enteredValue, setEnteredValue] = useState(initialValue);
+  const [isTouched, setIsTouched] = useState(false);
 
-    const valueIsValid = validateInput(enteredValue);
-    const hasError = (valueIsValid === false) && isTouched;
+  const valueIsValid = validateInput(enteredValue);
+  const hasError = valueIsValid === false && isTouched;
 
-    const inputChangeHandler = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-			setEnteredValue(event.target.value);
-		};
+  const inputChangeHandler = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setEnteredValue(event.target.value);
+  };
 
-    const inputBlurHandler = () => {
-       setIsTouched(true);
-    }
+  const inputBlurHandler = () => {
+    setIsTouched(true);
+  };
 
-    const reset = () => {
-       setEnteredValue('');
-       setIsTouched(false)
-    }
+  const reset = () => {
+    setEnteredValue("");
+    setIsTouched(false);
+  };
 
-    return {
-        value: enteredValue,
-        isValid: valueIsValid,
-        hasError,
-        inputChangeHandler,
-        inputBlurHandler,
-        reset
-    }
-}
+  return {
+    value: enteredValue,
+    isValid: valueIsValid,
+    hasError,
+    inputChangeHandler,
+    inputBlurHandler,
+    reset,
+  };
+};
 
 export default useInput;
