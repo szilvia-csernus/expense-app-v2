@@ -1,23 +1,24 @@
 import { centerImageOnPage, processAndResizeImage } from "./processImage";
 import type { ExpenseFormData, Church, ReceiptBuffer } from "./types";
 import { PDFDocument, StandardFonts, PDFPage, rgb } from "pdf-lib";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 
-async function downloadAndEmbedLogo(pdfDoc: PDFDocument, logoUrl: string) {
+async function downloadAndEmbedLogo(pdfDoc: PDFDocument, logoPath: string) {
   try {
-    const response = await fetch(logoUrl);
-    if (!response.ok) {
-      console.warn("Could not fetch logo:", response.statusText);
-      return null;
-    }
+    const s3Client = new S3Client({});
+    const command = new GetObjectCommand({
+      Bucket: process.env.STORAGE_BUCKET_NAME,
+      Key: logoPath,
+    });
 
-    const logoBuffer = await response.arrayBuffer();
-    const logoBytes = new Uint8Array(logoBuffer);
+    const response = await s3Client.send(command);
+    const logoBuffer = await response.Body!.transformToByteArray();
 
     // Try to embed as PNG first, then JPG
     try {
-      return await pdfDoc.embedPng(logoBytes);
+      return await pdfDoc.embedPng(logoBuffer);
     } catch {
-      return await pdfDoc.embedJpg(logoBytes);
+      return await pdfDoc.embedJpg(logoBuffer);
     }
   } catch (error) {
     console.warn("Error downloading logo:", error);
