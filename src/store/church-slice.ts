@@ -1,92 +1,105 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { Amplify } from "aws-amplify";
 import outputs from "../../amplify_outputs.json";
+import { calculateGreatestSK } from "../Utils/calculateGreatestSK";
 
 Amplify.configure(outputs);
-
-// Read query parameter from url. If there is an "adm" key, set its value as church,
-// otherwise, if there is a "church" key in localStorage, set its value as church,
-// otherwise set church to an empty string.
-function getInitialChurch() {
-  const params = new URLSearchParams(window.location.search);
-  const adm = params.get("adm");
-  let localChurch = "";
-  try {
-    localChurch = localStorage.getItem("church") || "";
-  } catch {
-    localChurch = "";
-  }
-  return adm !== null ? adm : localChurch;
-}
-
-const initialChurch = getInitialChurch();
-try {
-  localStorage.setItem("church", initialChurch);
-} catch (e) {
-  console.error("Failed to set church in localStorage:", e);
-}
-
-// Returns false if no church was selected and neither was a church present in the url
-const initialStatus = initialChurch === "";
 
 const churchSlice = createSlice({
   name: "church",
   initialState: {
-    churches: [] as string[],
-    status: initialStatus,
-    churchName: initialChurch,
-    churchPK: "",
+    churchPK: "CHURCH#1",
+    churchShortName: "",
+    churchLongName: "",
+    financeContactName: "",
+    financeEmail: "",
+    claimsCounter: 0,
     fetchingDetailsInProcess: false,
-    fetchingChurchesInProcess: false,
     logo: "",
-    costPurposes: [] as { name: string; costCode: number }[],
+    costPurposes: [] as {
+      costPurposeName: string;
+      costCode: number;
+      SK: `COSTPURPOSE#${string}` | undefined;
+    }[],
+    greatestCostPurposeSKNumber: null as number | null,
   },
   reducers: {
-    open(state) {
-      state.status = true;
-    },
-    close(state) {
-      state.status = false;
-    },
-    setChurch(state, action) {
-      state.churchName = action.payload.name;
-      state.churchPK = action.payload.churchPK;
-      localStorage.setItem("church", action.payload.name);
-    },
-    resetChurch(state) {
-      state.status = true;
-      state.churchName = "";
-      localStorage.removeItem("church");
-    },
     setFetchingDetailsInProcess(state, action) {
       state.fetchingDetailsInProcess = action.payload;
     },
     setChurchDetails(state, action) {
-      state.logo = action.payload["logo"];
+      if (action.payload["logo"]) {
+        state.logo = action.payload["logo"];
+      }
 
-      // Sort costPurposes array
-      const costPurposes = action.payload["costPurposes"];
-      costPurposes.sort(
-        (
-          a: { name: string; costCode: number },
-          b: { name: string; costCode: number }
-        ) => {
-          // Make "Other" or "other" appear last
-          if (a.name.toLowerCase() === "other") return 1;
-          if (b.name.toLowerCase() === "other") return -1;
+      if (action.payload["churchShortName"]) {
+        state.churchShortName = action.payload["churchShortName"];
+      }
 
-          // Otherwise, sort in alphabetical order
-          return a.name.localeCompare(b.name);
-        }
+      if (action.payload["churchLongName"]) {
+        state.churchLongName = action.payload["churchLongName"];
+      }
+
+      if (action.payload["financeContactName"]) {
+        state.financeContactName = action.payload["financeContactName"];
+      }
+
+      if (action.payload["financeEmail"]) {
+        state.financeEmail = action.payload["financeEmail"];
+      }
+
+      if (action.payload["claimsCounter"]) {
+        state.claimsCounter = action.payload["claimsCounter"];
+      }
+
+      if (action.payload["costPurposes"] === undefined) {
+        return;
+      } else {
+        // Sort costPurposes array
+        const costPurposes = action.payload["costPurposes"];
+        costPurposes.sort(
+          (
+            a: {
+              costPurposeName: string;
+              costCode: number;
+              SK: `COSTPURPOSE#${string}` | undefined;
+            },
+            b: {
+              costPurposeName: string;
+              costCode: number;
+              SK: `COSTPURPOSE#${string}` | undefined;
+            }
+          ) => {
+            // Make "Other" or "other" appear last
+            if (a.costPurposeName.toLowerCase() === "other") return 1;
+            if (b.costPurposeName.toLowerCase() === "other") return -1;
+
+            // Otherwise, sort in alphabetical order
+            return a.costPurposeName.localeCompare(b.costPurposeName);
+          }
+        );
+
+        state.costPurposes = costPurposes;
+
+        const greatestSK = calculateGreatestSK(costPurposes);
+        state.greatestCostPurposeSKNumber = greatestSK ? greatestSK : null;
+      }
+    },
+    editCostPurpose(state, action) {
+      const index = state.costPurposes.findIndex(
+        (item) => item.SK === action.payload.SK
       );
-
-      state.costPurposes = costPurposes;
+      if (index !== -1) {
+        state.costPurposes[index] = action.payload;
+      }
     },
-    setChurches(state, action) {
-      state.churches = action.payload;
+    addCostPurpose(state, action) {
+      state.costPurposes.push(action.payload);
     },
-    setFetchingChurchesInProcess(state, action) {
-      state.fetchingChurchesInProcess = action.payload;
+    removeCostPurpose(state, action) {
+      state.costPurposes = state.costPurposes.filter(
+        (item) => item.SK !== action.payload.SK
+      );
     },
   },
 });
