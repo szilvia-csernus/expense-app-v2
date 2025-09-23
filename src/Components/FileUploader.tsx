@@ -1,7 +1,7 @@
 import classes from "./Form.module.css";
 import { DeleteButton } from "./Buttons";
 import { useAppSelector } from "../store/index";
-import { type Dispatch, type SetStateAction, useEffect, useId } from "react";
+import { type Dispatch, type SetStateAction, useEffect } from "react";
 
 type FileUploader = {
   selectedFile: File | null;
@@ -23,8 +23,7 @@ const FileUploader = ({
   totalFileSize,
   setTotalFileSize,
 }: FileUploader) => {
-  const submitting = useAppSelector((state) => state.costForm.submitting);
-  const id = useId();
+  const submitting = useAppSelector((state) => state.form.submitting);
   const receiptsClassNames = `${classes.formInput} 
                                 ${fileError && classes.fileInputInvalid} 
                                 ${classes.customFileUploadButton}`;
@@ -60,8 +59,8 @@ const FileUploader = ({
       setFileError("File type not supported");
       setTimeout(() => setFileError(false), 3000);
       return false;
-    } else if (totalFileSize + fileSize > 5.5 * 1024 * 1024) {
-      setFileError("Total file size cannot exceed 5 MB");
+    } else if (totalFileSize + fileSize > 4 * 1024 * 1024) {
+      setFileError("Total file size cannot exceed 4 MB");
       setTimeout(() => setFileError(false), 5000);
       return false;
     }
@@ -87,7 +86,10 @@ const FileUploader = ({
     <ul>
       {fileList.map((file: File) => {
         return (
-          <li className={classes.fileListItem} key={id}>
+          <li
+            className={classes.fileListItem}
+            key={file.name + "-" + Date.now()}
+          >
             <DeleteButton onClick={() => removeFileFromList(file)}>
               X
             </DeleteButton>
