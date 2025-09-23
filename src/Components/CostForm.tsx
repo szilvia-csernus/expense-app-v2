@@ -1,21 +1,16 @@
 import classes from "./Form.module.css";
 
 import { useState, useEffect } from "react";
-import useInput, { type ValidateType } from "../Hooks/use-input";
-import { SubmitButton } from "./Buttons";
+import useInput from "../Hooks/use-input";
+import { PrimaryButton } from "./Buttons";
 import FileUploader from "./FileUploader";
 import { noNetworkError, send } from "../store/form-action-creators";
 import { useAppSelector } from "../store/index";
-import { costFormActions } from "../store/cost-form-slice";
-import { churchActions } from "../store/church-slice";
+import { formActions } from "../store/form-slice";
 import ChurchLogo from "./ChurchLogo";
 import { useAppDispatch } from "../store/index";
 import Loader from "./Loader";
-
-const isNotEmpty: ValidateType = (value) => value.trim() !== "";
-const isEmail: ValidateType = (value) =>
-  /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(value);
-const noValidate = () => true;
+import { isNotEmpty, isEmail, noValidate } from "../Utils/validations";
 
 const CostForm = () => {
   const [formValid, setFormValid] = useState(false);
@@ -28,18 +23,14 @@ const CostForm = () => {
   const [totalFileSize, setTotalFileSize] = useState<number>(0);
 
   const purposes = useAppSelector((state) => state.church.costPurposes);
-  const churchName = useAppSelector((state) => state.church.churchName);
+  const churchName = useAppSelector((state) => state.church.churchShortName);
   const churchPK = useAppSelector((state) => state.church.churchPK);
   const fetchingInProcess = useAppSelector(
     (state) => state.church.fetchingDetailsInProcess
   );
+  const submitting = useAppSelector((state) => state.form.submitting);
 
   const dispatch = useAppDispatch();
-
-  const handleSelectChurch = () => {
-    dispatch(churchActions.open());
-    purposeReset();
-  };
 
   const {
     value: nameValue,
@@ -48,7 +39,7 @@ const CostForm = () => {
     inputChangeHandler: nameChangeHandler,
     inputBlurHandler: nameBlurHandler,
     reset: nameReset,
-  } = useInput(isNotEmpty);
+  } = useInput({ validateInput: isNotEmpty });
 
   const {
     value: emailValue,
@@ -57,7 +48,7 @@ const CostForm = () => {
     inputChangeHandler: emailChangeHandler,
     inputBlurHandler: emailBlurHandler,
     reset: emailReset,
-  } = useInput(isEmail);
+  } = useInput({ validateInput: isEmail });
 
   const {
     value: dateValue,
@@ -66,7 +57,7 @@ const CostForm = () => {
     inputChangeHandler: dateChangeHandler,
     inputBlurHandler: dateBlurHandler,
     reset: dateReset,
-  } = useInput(isNotEmpty);
+  } = useInput({ validateInput: isNotEmpty });
 
   const {
     value: descriptionValue,
@@ -75,7 +66,7 @@ const CostForm = () => {
     inputChangeHandler: descriptionChangeHandler,
     inputBlurHandler: descriptionBlurHandler,
     reset: descriptionReset,
-  } = useInput(isNotEmpty);
+  } = useInput({ validateInput: isNotEmpty });
 
   const {
     value: purposeValue,
@@ -84,7 +75,7 @@ const CostForm = () => {
     inputChangeHandler: purposeChangeHandler,
     inputBlurHandler: purposeBlurHandler,
     reset: purposeReset,
-  } = useInput(isNotEmpty);
+  } = useInput({ validateInput: isNotEmpty });
 
   const {
     value: totalValue,
@@ -93,7 +84,7 @@ const CostForm = () => {
     inputChangeHandler: totalChangeHandler,
     inputBlurHandler: totalBlurHandler,
     reset: totalReset,
-  } = useInput(isNotEmpty);
+  } = useInput({ validateInput: isNotEmpty });
 
   const {
     value: ibanValue,
@@ -102,7 +93,7 @@ const CostForm = () => {
     inputChangeHandler: ibanChangeHandler,
     inputBlurHandler: ibanBlurHandler,
     reset: ibanReset,
-  } = useInput(noValidate);
+  } = useInput({ validateInput: noValidate });
 
   const {
     value: accountNameValue,
@@ -111,7 +102,7 @@ const CostForm = () => {
     inputChangeHandler: accountNameChangeHandler,
     inputBlurHandler: accountNameBlurHandler,
     reset: accountNameReset,
-  } = useInput(noValidate);
+  } = useInput({ validateInput: noValidate });
 
   useEffect(() => {
     if (
@@ -144,7 +135,7 @@ const CostForm = () => {
 
   const submitHandler = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(costFormActions.setSubmitting());
+    dispatch(formActions.setSubmitting());
 
     if (!formValid) {
       nameBlurHandler();
@@ -155,6 +146,7 @@ const CostForm = () => {
       totalBlurHandler();
       ibanBlurHandler();
       accountNameBlurHandler();
+      dispatch(formActions.resetSubmitting());
       return;
     } else {
       const formData = new FormData();
@@ -206,7 +198,7 @@ const CostForm = () => {
         send(dispatch, formData, churchPK, resetForm, resetFileUploader);
       }
 
-      dispatch(costFormActions.resetSubmitting());
+      dispatch(formActions.resetSubmitting());
     }
   };
 
@@ -236,12 +228,13 @@ const CostForm = () => {
   }`;
 
   return (
-    <section className={classes.content}>
+    <div className={classes.content}>
       {fetchingInProcess && <Loader />}
 
       {!fetchingInProcess && (
         <>
           <ChurchLogo />
+          <h1 className={classes.header}>Expense Form</h1>
           <br />
           <div className={classes.formBody}>
             <form className={classes.form} onSubmit={submitHandler}>
@@ -311,7 +304,7 @@ const CostForm = () => {
                 <h2>Expenses</h2>
 
                 {/* Selected Church  */}
-                <p className={classes.labelSubText}>
+                {/* <p className={classes.labelSubText}>
                   Your Selected Church is <strong>{churchName}</strong>. Is this
                   not your church?{" "}
                   <span
@@ -320,7 +313,7 @@ const CostForm = () => {
                   >
                     Change it here.
                   </span>
-                </p>
+                </p> */}
 
                 {/* Purpose  */}
                 <label htmlFor="purpose" className={classes.labelText}>
@@ -343,14 +336,17 @@ const CostForm = () => {
                   {purposes.map((purpose) =>
                     purpose.costCode ? (
                       <option
-                        key={`${purpose.name} ${purpose.costCode}`}
-                        value={`${purpose.name} (${purpose.costCode})`}
+                        key={`${purpose.costPurposeName} ${purpose.costCode}`}
+                        value={`${purpose.costPurposeName} (${purpose.costCode})`}
                       >
-                        {`${purpose.name} (${purpose.costCode})`}
+                        {`${purpose.costPurposeName} (${purpose.costCode})`}
                       </option>
                     ) : (
-                      <option key={purpose.name} value={purpose.name}>
-                        {purpose.name}
+                      <option
+                        key={purpose.costPurposeName}
+                        value={purpose.costPurposeName}
+                      >
+                        {purpose.costPurposeName}
                       </option>
                     )
                   )}
@@ -454,7 +450,7 @@ const CostForm = () => {
                 <p className={classes.labelSubText}>
                   Please take/upload a clear picture or PDF of the receipt of
                   the expense made. Accepted file types: png, jpg, jpeg, pdf.
-                  Max upload: 5MB.
+                  Max upload: 4MB.
                 </p>
 
                 <FileUploader
@@ -532,13 +528,15 @@ const CostForm = () => {
 
               <br />
               <div className={classes.footer}>
-                <SubmitButton>Submit</SubmitButton>
+                <PrimaryButton type="submit" disabled={submitting}>
+                  Submit
+                </PrimaryButton>
               </div>
             </form>
           </div>
         </>
       )}
-    </section>
+    </div>
   );
 };
 
