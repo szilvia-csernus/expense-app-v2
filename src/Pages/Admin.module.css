@@ -1,0 +1,15 @@
+.content {
+  text-align: center;
+}
+
+.adminLogin {
+  font-size: 0.9rem;
+  text-decoration: underline;
+  color: var(--main-text-color);
+}
+
+.authenticator {
+  display: block;
+  min-height: 70vh;
+  color: var(--main-text-color);
+}
