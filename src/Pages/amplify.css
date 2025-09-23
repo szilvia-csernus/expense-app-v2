@@ -1,0 +1,63 @@
+[data-amplify-authenticator] {
+  --amplify-components-authenticator-router-box-shadow: 0 0 16px
+    var(--amplify-colors-overlay-10);
+  --amplify-components-authenticator-router-border-width: 0;
+  --amplify-components-authenticator-form-padding: var(--amplify-space-medium)
+    var(--amplify-space-xl) var(--amplify-space-xl);
+  --amplify-components-fieldcontrol-focus-box-shadow: 0 0 0 2px
+    var(--amplify-colors-teal-60);
+  --amplify-components-tabs-item-active-border-color: var(
+    --amplify-colors-neutral-100
+  );
+  --amplify-components-tabs-item-color: var(--amplify-colors-teal-80);
+  --amplify-components-tabs-item-active-color: var(--amplify-colors-teal-100);
+  --amplify-components-button-link-color: var(--amplify-colors-teal-80);
+}
+
+.amplify-heading--6 {
+  font-size: var(--amplify-components-heading-5-font-size);
+  font-weight: var(--amplify-components-heading-6-font-weight);
+  justify-content: center;
+}
+
+.amplify-heading {
+  color: var(--amplify-colors-grey-80);
+  line-height: 4rem;
+  display: flex;
+  align-items: center;
+}
+
+.amplify-button {
+  --amplify-internal-button-disabled-background-color: var(--button-color);
+  --amplify-internal-button-disabled-color: var(--button-color);
+  --amplify-internal-button-loading-background-color: var(--button-color);
+  --amplify-internal-button-loading-border-color: var(--button-color);
+  --amplify-internal-button-loading-color: var(--button-color);
+}
+
+.amplify-button--primary {
+  --amplify-internal-button-border-width: var(
+    --amplify-components-button-primary-border-width
+  );
+  --amplify-internal-button-background-color: var(--primary-color);
+  --amplify-internal-button-border-color: var(--button-color);
+  --amplify-internal-button-color: white;
+  --amplify-internal-button-disabled-border-color: var(
+    --amplify-components-button-primary-disabled-border-color
+  );
+  --amplify-internal-button-disabled-background-color: var(
+    --amplify-components-button-primary-disabled-background-color
+  );
+  --amplify-internal-button-disabled-color: var(
+    --amplify-components-button-primary-disabled-color
+  );
+  --amplify-internal-button-loading-background-color: var(
+    --amplify-components-button-primary-loading-background-color
+  );
+  --amplify-internal-button-loading-border-color: var(
+    --amplify-components-button-primary-loading-border-color
+  );
+  --amplify-internal-button-loading-color: var(
+    --amplify-components-button-primary-loading-color
+  );
+}
