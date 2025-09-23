@@ -1,7 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import costFormSlice from "./cost-form-slice";
-import thankYouMessageSlice from "./thank-you-message-slice";
-import errorMessageSlice from "./error-message-slice";
+import formSlice from "./form-slice";
 import churchSlice from "./church-slice";
 
 import {
@@ -9,13 +7,13 @@ import {
   useSelector,
   type TypedUseSelectorHook,
 } from "react-redux";
+import modalMessageSlice from "./modal-message-slice";
 
 const store = configureStore({
   reducer: {
     church: churchSlice.reducer,
-    costForm: costFormSlice.reducer,
-    thankYouMessage: thankYouMessageSlice.reducer,
-    errorMessage: errorMessageSlice.reducer,
+    form: formSlice.reducer,
+    modalMessage: modalMessageSlice.reducer,
   },
 });
 

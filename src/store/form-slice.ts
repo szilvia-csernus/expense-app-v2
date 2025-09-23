@@ -1,7 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
-const costFormSlice = createSlice({
-  name: "costForm",
+const formSlice = createSlice({
+  name: "form",
   initialState: {
     status: false,
     submitting: false,
@@ -26,10 +26,10 @@ const costFormSlice = createSlice({
     },
     resetSending(state) {
       state.sending = false;
-    }
+    },
   },
 });
 
-export const costFormActions = costFormSlice.actions;
+export const formActions = formSlice.actions;
 
-export default costFormSlice;
+export default formSlice;
