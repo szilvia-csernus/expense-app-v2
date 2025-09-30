@@ -35,6 +35,9 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       body: JSON.stringify({ error: "Origin not allowed" }),
     };
   }
+
+  console.log("Environment variables:", JSON.stringify(process.env, null, 2));
+
   console.log(
     "AMPLIFY_DATA_GRAPHQL_ENDPOINT:",
     process.env.AMPLIFY_DATA_GRAPHQL_ENDPOINT || "missing"
