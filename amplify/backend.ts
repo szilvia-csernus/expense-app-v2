@@ -170,17 +170,17 @@ const region = Stack.of(restApi).region;
 const accountId = Stack.of(restApi).account;
 
 // Create SNS topic for notifications - Create just once!!! (and comment out the alternative ways below)
-const notificationTopic = new Topic(apiStack, "ExpenseLimitNotificationTopic", {
-  displayName: "Expense App Limit Notifications",
-  topicName: "expense-app-limit-alerts",
-});
+// const notificationTopic = new Topic(apiStack, "ExpenseLimitNotificationTopic", {
+//   displayName: "Expense App Limit Notifications",
+//   topicName: "expense-app-limit-alerts",
+// });
 
 // Just reference the existing topic by ARN - later on, use this instead of the code above, by commenting it out
-// const notificationTopic = Topic.fromTopicArn(
-//   apiStack,
-//   "ExpenseLimitNotificationTopic",
-//   `arn:aws:sns:${region}:${accountId}:expense-app-limit-alerts`
-// );
+const notificationTopic = Topic.fromTopicArn(
+  apiStack,
+  "ExpenseLimitNotificationTopic",
+  `arn:aws:sns:${region}:${accountId}:expense-app-limit-alerts`
+);
 
 // Add environment variable for the topic ARN
 backend.sendExpenseFormFunction.addEnvironment(
