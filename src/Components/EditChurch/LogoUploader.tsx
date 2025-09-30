@@ -60,7 +60,6 @@ const LogoUploader = ({ cancelEditing }: Props) => {
     <>
       <StorageImage
         path={currentLogoPath}
-        fallbackSrc="logos/rotterdamLogo_default.png"
         width="auto"
         height="80"
         className={classes.churchLogo}
