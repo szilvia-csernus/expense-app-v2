@@ -8,7 +8,7 @@ const ChurchLogo = () => {
 
   return (
     <StorageImage
-      path={churchLogo}
+      path={churchLogo || "logos/rotterdamLogo_default.png"}
       className={classes.churchLogo}
       alt="church logo"
       style={{ height: "60px", width: "auto" }}
