@@ -97,27 +97,6 @@ const EditChurch = () => {
               </>
             )}
 
-            {editingField === "churchShortName" ? (
-              <TextFieldUpdateForm
-                cancelEditing={cancelEditing}
-                fieldname="churchShortName"
-                fieldLabel="Church Short Name"
-                fieldErrorMessage="Please enter a valid short name for the church."
-              />
-            ) : (
-              <>
-                <div className={classes.labelText}>Church Short Name</div>
-                <div className={classes.editText}>{churchShortName}</div>
-                <EditButton
-                  type="button"
-                  onClick={() => startEditing("churchShortName")}
-                  disabled={editingField !== "none"}
-                >
-                  Update
-                </EditButton>
-              </>
-            )}
-
             {editingField === "churchLongName" ? (
               <TextFieldUpdateForm
                 cancelEditing={cancelEditing}
@@ -134,6 +113,29 @@ const EditChurch = () => {
                 <EditButton
                   type="button"
                   onClick={() => startEditing("churchLongName")}
+                  disabled={editingField !== "none"}
+                >
+                  Update
+                </EditButton>
+              </>
+            )}
+
+            {editingField === "churchShortName" ? (
+              <TextFieldUpdateForm
+                cancelEditing={cancelEditing}
+                fieldname="churchShortName"
+                fieldLabel="Church Short Name"
+                fieldErrorMessage="Please enter a valid short name for the church."
+              />
+            ) : (
+              <>
+                <div className={classes.labelText}>
+                  Short Name for the Church
+                </div>
+                <div className={classes.editText}>{churchShortName}</div>
+                <EditButton
+                  type="button"
+                  onClick={() => startEditing("churchShortName")}
                   disabled={editingField !== "none"}
                 >
                   Update
