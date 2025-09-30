@@ -18,7 +18,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   // Check if origin is allowed ( for requests outside a modern browser where CORS is not enforced.)
   const origin = event.headers?.origin || event.headers?.Origin || "*";
   const allowedOrigins = [
-    "https://main.d385435020119.amplifyapp.com",
+    `https://main.${process.env.AMPLIFY_APP_ID}.amplifyapp.com`,
     "http://localhost:5173",
   ];
 
