@@ -35,10 +35,11 @@ export const backend = defineBackend({
 // const apiStack = backend.createStack("api-stack");
 const apiStack = Stack.of(backend.sendExpenseFormFunction.resources.lambda);
 
-export const ORIGINS = [
-  `https://main.${backend.stack.account}.amplifyapp.com`, // Production environment
+const ORIGINS = [
+  `https://main.${process.env.AMPLIFY_APP_ID}.amplifyapp.com`, // Production environment
   "http://localhost:5173", // Local development
 ];
+
 // create Rest API
 const restApi = new RestApi(apiStack, "RestApi", {
   restApiName: "expenseFormApi",
