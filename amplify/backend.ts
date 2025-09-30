@@ -4,7 +4,7 @@ import { data } from "./data/resource";
 import { storage } from "./storage/resource";
 import { sendExpenseFormFunction } from "./functions/sendExpenseForm/resource";
 import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
-import { Fn, Stack } from "aws-cdk-lib";
+import { Stack } from "aws-cdk-lib";
 import { Topic } from "aws-cdk-lib/aws-sns";
 import { EmailSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
@@ -36,8 +36,8 @@ export const backend = defineBackend({
 const apiStack = Stack.of(backend.sendExpenseFormFunction.resources.lambda);
 
 export const ORIGINS = [
-  `https://main.${Fn.sub("d${AWS::AccountId}")}.amplifyapp.com`,
-  "http://localhost:5173",
+  `https://main.${backend.stack.account}.amplifyapp.com`, // Production environment
+  "http://localhost:5173", // Local development
 ];
 // create Rest API
 const restApi = new RestApi(apiStack, "RestApi", {
