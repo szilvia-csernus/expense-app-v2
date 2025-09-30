@@ -60,10 +60,9 @@ const LogoUploader = ({ cancelEditing }: Props) => {
     <>
       <StorageImage
         path={currentLogoPath}
-        width="auto"
-        height="80"
         className={classes.churchLogo}
         alt="church logo"
+        style={{ height: "60px", width: "auto" }}
       />
       {!confirming && (
         <>

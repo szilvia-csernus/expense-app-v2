@@ -79,6 +79,7 @@ const EditChurch = () => {
           <br />
           {/* CHURCH INFORMATION */}
           <div>
+            <h2>Church Information</h2>
             {editingField === "logo" ? (
               <LogoUploader cancelEditing={cancelEditing} />
             ) : (
@@ -95,7 +96,6 @@ const EditChurch = () => {
                 </EditButton>
               </>
             )}
-            <h2>Church Information</h2>
 
             {editingField === "churchShortName" ? (
               <TextFieldUpdateForm
@@ -221,9 +221,11 @@ const EditChurch = () => {
                       <span className={classes.editIcon}>🖌</span>
                     </EditIconButton>
                     <EditIconButton
+                      type="button"
                       onClick={() =>
                         deleteCostPurpose(dispatch, churchPK, purpose.SK!)
                       }
+                      disabled={editingField !== "none"}
                     >
                       <span className={classes.editIcon}>❌</span>
                     </EditIconButton>
