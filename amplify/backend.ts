@@ -35,8 +35,11 @@ export const backend = defineBackend({
 // const apiStack = backend.createStack("api-stack");
 const apiStack = Stack.of(backend.sendExpenseFormFunction.resources.lambda);
 
+// These origins are used for the preflight CORS requests (OPTIONS),
+// in the actual request, the allowedOrigin header is set dynamically in the handler.ts
+// This more permissive approach is needed because parameter store is not accessible during build time
 const ORIGINS = [
-  `https://main.${process.env.AMPLIFY_APP_ID}.amplifyapp.com`, // Production environment
+  "https://*.amplifyapp.com", // Production environment
   "http://localhost:5173", // Local development
 ];
 
@@ -219,6 +222,7 @@ backend.sendExpenseFormFunction.resources.lambda.addToRolePolicy(
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/gmail/refresh-token`,
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/request-count`,
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/notification-email`,
+      `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/amplify-app-id`,
     ],
   })
 );
@@ -285,13 +289,17 @@ backend.sendExpenseFormFunction.addEnvironment(
   "GMAIL_REFRESH_TOKEN",
   "/expense-app/gmail/refresh-token"
 );
+backend.sendExpenseFormFunction.addEnvironment(
+  "AMPLIFY_APP_ID",
+  "/expense-app/amplify-app-id"
+);
 
 // CORS on default API Gateway error responses
 new GatewayResponse(apiStack, "Default4xxWithCors", {
   restApi,
   type: ResponseType.DEFAULT_4XX,
   responseHeaders: {
-    "Access-Control-Allow-Origin": "'*'",
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "'Content-Type,x-api-key'",
     "Access-Control-Allow-Methods": "'OPTIONS,POST'",
   },
@@ -300,7 +308,7 @@ new GatewayResponse(apiStack, "Default5xxWithCors", {
   restApi,
   type: ResponseType.DEFAULT_5XX,
   responseHeaders: {
-    "Access-Control-Allow-Origin": "'*'",
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "'Content-Type,x-api-key'",
     "Access-Control-Allow-Methods": "'OPTIONS,POST'",
   },
