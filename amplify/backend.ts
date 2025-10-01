@@ -35,11 +35,11 @@ export const backend = defineBackend({
 // const apiStack = backend.createStack("api-stack");
 const apiStack = Stack.of(backend.sendExpenseFormFunction.resources.lambda);
 
-// These origins are used for the preflight CORS requests (OPTIONS),
-// in the actual request, the allowedOrigin header is set dynamically in the handler.ts
-// This more permissive approach is needed because parameter store is not accessible during build time
+const appId = process.env.AMPLIFY_APP_ID;
+
+// These origins are used for the preflight CORS requests (OPTIONS)
 const ORIGINS = [
-  "https://*.amplifyapp.com", // Production environment
+  `https://main.${appId}.amplifyapp.com`, // Production environment
   "http://localhost:5173", // Local development
 ];
 
@@ -98,9 +98,6 @@ submitExpenseResource.addMethod("POST", lambdaIntegration, {
     { statusCode: "500" }, // Server Error (general errors)
   ],
 });
-submitExpenseResource.addMethod("GET", lambdaIntegration);
-submitExpenseResource.addMethod("DELETE", lambdaIntegration);
-submitExpenseResource.addMethod("PUT", lambdaIntegration);
 
 // add a proxy resource path to the API
 submitExpenseResource.addProxy({
