@@ -24,12 +24,15 @@ Amplify.configure(
           strategy: "no-retry", // Overrides default retry strategy
         },
         headers: async () => {
-          return { "X-Api-Key": import.meta.env.API_GATEWAY_KEY };
+          return { "X-Api-Key": import.meta.env.VITE_API_GATEWAY_KEY };
         },
       },
     },
   }
 );
+
+console.log("API Key:", import.meta.env.VITE_API_GATEWAY_KEY);
+console.log("All env vars:", import.meta.env);
 
 /** Error handler. Stop sending the form and show error message. */
 const handleError = (dispatch: AppDispatch, title: string, message: string) => {
@@ -197,12 +200,8 @@ export const send = async (
       // }
     } catch (error) {
       console.error("Error sending form:", error);
-      if ("serviceWorker" in navigator && "SyncManager" in window) {
-        sendFormLaterError(dispatch);
-        resetForm();
-      } else {
-        unKnownError(dispatch);
-      }
+      resetForm();
+      unKnownError(dispatch);
     }
   } catch (error) {
     console.error("Error sending form:", error);
