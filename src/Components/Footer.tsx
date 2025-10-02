@@ -1,6 +1,6 @@
 import React from "react";
 import classes from "./Footer.module.css";
-// import logoUrl from "../images/expLogo.png";
+import logoUrl from "../images/expLogo.png";
 
 function Footer({ children }: { children?: React.ReactNode }) {
   return (
@@ -8,13 +8,13 @@ function Footer({ children }: { children?: React.ReactNode }) {
       <p>©{new Date().getFullYear()} Expense App</p>
       <div className={classes.separator}></div>
       <div>
-        {/* <img
+        <img
           src={logoUrl}
           width="20"
           height="20"
           className={classes.logo}
           alt="app logo"
-        ></img> */}
+        ></img>
       </div>
 
       {children}
