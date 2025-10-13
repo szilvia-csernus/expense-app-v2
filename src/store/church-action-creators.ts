@@ -9,7 +9,8 @@ import { callAfterTimeout } from "../Utils/timeout";
 export const getChurchDetails = (dispatch: Dispatch, churchPK: string) => {
   dispatch(churchActions.setFetchingDetailsInProcess(true));
   const fetchData = async () => {
-    const expenseAppClient = generateClient<Schema>().models.ExpenseApp;
+    const expenseAppClient = generateClient<Schema>({ authMode: "apiKey" })
+      .models.ExpenseApp;
     // find church details in the database
     const responseProfile = await expenseAppClient.list({
       filter: { PK: { eq: churchPK }, SK: { eq: "PROFILE" } },
