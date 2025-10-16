@@ -5,9 +5,6 @@ import { storage } from "./storage/resource";
 import { sendExpenseFormFunction } from "./functions/sendExpenseForm/resource";
 import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { Stack } from "aws-cdk-lib";
-import { Topic } from "aws-cdk-lib/aws-sns";
-import { EmailSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
-import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import {
   Cors,
   LambdaIntegration,
@@ -170,43 +167,20 @@ backend.addOutput({
 const region = Stack.of(restApi).region;
 const accountId = Stack.of(restApi).account;
 
-// Create SNS topic for notifications - Create just once!!! (and comment out the alternative ways below)
-// const notificationTopic = new Topic(apiStack, "ExpenseLimitNotificationTopic", {
-//   displayName: "Expense App Limit Notifications",
-//   topicName: "expense-app-limit-alerts",
-// });
-
-// Just reference the existing topic by ARN - later on, use this instead of the code above, by commenting it out
-const notificationTopic = Topic.fromTopicArn(
-  apiStack,
-  "ExpenseLimitNotificationTopic",
-  `arn:aws:sns:${region}:${accountId}:expense-app-limit-alerts`
-);
+const notificationTopicArn = `arn:aws:sns:${region}:${accountId}:expense-app-limit-alerts`;
 
 // Add environment variable for the topic ARN
 backend.sendExpenseFormFunction.addEnvironment(
   "NOTIFICATION_TOPIC_ARN",
-  notificationTopic.topicArn
+  notificationTopicArn
 );
 
 // Add SNS permissions to your Lambda function
 backend.sendExpenseFormFunction.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     actions: ["sns:Publish"],
-    resources: [notificationTopic.topicArn],
+    resources: [notificationTopicArn],
   })
-);
-
-// Create or reference an SSM parameter for notification email
-const notificationEmailParam = StringParameter.fromStringParameterName(
-  apiStack,
-  "NotificationEmailParam",
-  "/expense-app/notification-email"
-);
-
-// Use the parameter value for the subscription
-notificationTopic.addSubscription(
-  new EmailSubscription(notificationEmailParam.stringValue)
 );
 
 // Update your existing SSM permissions to include the request-count parameter
