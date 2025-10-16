@@ -13,34 +13,38 @@ import { getChurchDetailsAndUpdateCounter } from "./getChurchDetailsAndUpdateCou
 import { checkMonthlyLimit } from "./checkMonthlyLimit";
 import { checkRateLimit } from "./checkIPRateLimit";
 import { parseMultipart } from "./parseMultipart";
-import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
+// import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
 
-const ssmClient = new SSMClient({ region: process.env.AWS_REGION });
+// const ssmClient = new SSMClient({ region: process.env.AWS_REGION });
 
-async function loadAppId() {
-  try {
-    console.log("Loading Amplify App ID from Parameter Store...");
+// async function loadAppId() {
+//   try {
+//     console.log("Loading Amplify App ID from Parameter Store...");
 
-    const appIdResult = await ssmClient.send(
-      new GetParameterCommand({ Name: "/expense-app/amplify-app-id" })
-    );
+//     const appIdResult = await ssmClient.send(
+//       new GetParameterCommand({ Name: "/expense-app/amplify-app-id" })
+//     );
 
-    if (!appIdResult.Parameter?.Value) {
-      throw new Error("Amplify App ID is missing from Parameter Store");
-    }
+//     if (!appIdResult.Parameter?.Value) {
+//       throw new Error("Amplify App ID is missing from Parameter Store");
+//     }
 
-    console.log("Amplify App ID loaded successfully from Parameter Store");
-    return appIdResult.Parameter.Value;
-  } catch (error) {
-    console.error("Error loading Amplify App ID from Parameter Store:", error);
-    throw new Error("Failed to load Amplify App ID");
-  }
-}
+//     console.log("Amplify App ID loaded successfully from Parameter Store");
+//     return appIdResult.Parameter.Value;
+//   } catch (error) {
+//     console.error("Error loading Amplify App ID from Parameter Store:", error);
+//     throw new Error("Failed to load Amplify App ID");
+//   }
+// }
 
 export const handler: APIGatewayProxyHandler = async (event) => {
   // Check if origin is allowed ( for requests outside a modern browser where CORS is not enforced.)
   const origin = event.headers?.origin || event.headers?.Origin || "*";
-  const appId = await loadAppId();
+  const appId = process.env.AWS_APP_ID;
+
+  if (!appId) {
+    throw new Error("AWS_APP_ID not set, using fallback (empty string)");
+  }
   const allowedOrigins = [
     `https://main.${appId}.amplifyapp.com`,
     "http://localhost:5173",
