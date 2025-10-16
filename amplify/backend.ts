@@ -32,7 +32,8 @@ export const backend = defineBackend({
 // const apiStack = backend.createStack("api-stack");
 const apiStack = Stack.of(backend.sendExpenseFormFunction.resources.lambda);
 
-const appId = process.env.AMPLIFY_APP_ID;
+// const appId = process.env.AMPLIFY_APP_ID;
+const appId = process.env.AWS_APP_ID;
 
 // These origins are used for the preflight CORS requests (OPTIONS)
 const ORIGINS = [
@@ -123,7 +124,7 @@ backend.auth.resources.unauthenticatedUserIamRole.attachInlinePolicy(
   apiRestPolicy
 );
 
-// Optional: Create usage plan for even more control
+// Usage plan is needed to enable rate limiting
 const usagePlan = new UsagePlan(apiStack, "ExpenseFormUsagePlan", {
   name: "ExpenseFormUsagePlan",
   description: "Usage plan for expense form API",
@@ -143,7 +144,7 @@ usagePlan.addApiStage({
   stage: restApi.deploymentStage,
 });
 
-// Optional: Create API key for additional security
+// API key is needed for the usage plan
 const apiKey = new ApiKey(apiStack, "ExpenseFormApiKey", {
   description: "API Key for Expense Form, used as a public api key in frontend",
 });
@@ -193,7 +194,7 @@ backend.sendExpenseFormFunction.resources.lambda.addToRolePolicy(
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/gmail/refresh-token`,
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/request-count`,
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/notification-email`,
-      `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/amplify-app-id`,
+      // `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/amplify-app-id`,
     ],
   })
 );
@@ -260,10 +261,7 @@ backend.sendExpenseFormFunction.addEnvironment(
   "GMAIL_REFRESH_TOKEN",
   "/expense-app/gmail/refresh-token"
 );
-backend.sendExpenseFormFunction.addEnvironment(
-  "AMPLIFY_APP_ID",
-  "/expense-app/amplify-app-id"
-);
+backend.sendExpenseFormFunction.addEnvironment("AWS_APP_ID", appId || "");
 
 // CORS on default API Gateway error responses
 new GatewayResponse(apiStack, "Default4xxWithCors", {
