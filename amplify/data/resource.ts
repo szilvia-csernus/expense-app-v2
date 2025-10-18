@@ -1,9 +1,11 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { sendExpenseFormFunction } from "../functions/sendExpenseForm/resource";
 
+const branch = process.env.AWS_BRANCH || "dev";
+
 const schema = a
   .schema({
-    ExpenseApp: a
+    Expense: a
       .model({
         PK: a // Partition Key: e.g. CHURCH#1
           .string()
@@ -82,8 +84,11 @@ const schema = a
 
 export type Schema = ClientSchema<typeof schema>;
 
+const schemaName = `ExpenseApp-${branch}`;
+
 export const data = defineData({
   schema,
+  name: schemaName,
   authorizationModes: {
     defaultAuthorizationMode: "apiKey",
   },
