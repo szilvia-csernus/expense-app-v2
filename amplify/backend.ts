@@ -32,18 +32,18 @@ export const backend = defineBackend({
 // const apiStack = backend.createStack("api-stack");
 const apiStack = Stack.of(backend.sendExpenseFormFunction.resources.lambda);
 
-// const appId = process.env.AMPLIFY_APP_ID;
 const appId = process.env.AWS_APP_ID;
+const branch = process.env.AWS_BRANCH || "dev";
 
 // These origins are used for the preflight CORS requests (OPTIONS)
 const ORIGINS = [
-  `https://main.${appId}.amplifyapp.com`, // Production environment
+  `https://${branch}.${appId}.amplifyapp.com`, // Test / Production environment
   "http://localhost:5173", // Local development
 ];
 
 // create Rest API
 const restApi = new RestApi(apiStack, "RestApi", {
-  restApiName: "expenseFormApi",
+  restApiName: `expenseFormApi-${branch}`,
   deploy: true,
   deployOptions: {
     stageName: "dev",
@@ -126,8 +126,8 @@ backend.auth.resources.unauthenticatedUserIamRole.attachInlinePolicy(
 
 // Usage plan is needed to enable rate limiting
 const usagePlan = new UsagePlan(apiStack, "ExpenseFormUsagePlan", {
-  name: "ExpenseFormUsagePlan",
-  description: "Usage plan for expense form API",
+  name: `ExpenseFormUsagePlan-${branch}`,
+  description: `Usage plan for expense form API - ${branch}`,
   throttle: {
     rateLimit: 1, // 1 request per second
     burstLimit: 2, // 2 concurrent requests max
@@ -146,7 +146,7 @@ usagePlan.addApiStage({
 
 // API key is needed for the usage plan
 const apiKey = new ApiKey(apiStack, "ExpenseFormApiKey", {
-  description: "API Key for Expense Form, used as a public api key in frontend",
+  description: `API Key for Expense Form - ${branch}, used as a public api key in frontend`,
 });
 
 usagePlan.addApiKey(apiKey);
@@ -194,7 +194,6 @@ backend.sendExpenseFormFunction.resources.lambda.addToRolePolicy(
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/gmail/refresh-token`,
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/request-count`,
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/notification-email`,
-      // `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/amplify-app-id`,
     ],
   })
 );
@@ -239,7 +238,7 @@ backend.sendExpenseFormFunction.addEnvironment(
 
 backend.sendExpenseFormFunction.addEnvironment(
   "AMPLIFY_DATA_DEFAULT_NAME",
-  "main"
+  branch || "dev"
 );
 
 // Add environment variables for the Lambda function
@@ -262,6 +261,7 @@ backend.sendExpenseFormFunction.addEnvironment(
   "/expense-app/gmail/refresh-token"
 );
 backend.sendExpenseFormFunction.addEnvironment("AWS_APP_ID", appId || "");
+backend.sendExpenseFormFunction.addEnvironment("AWS_BRANCH", branch || "dev");
 
 // CORS on default API Gateway error responses
 new GatewayResponse(apiStack, "Default4xxWithCors", {
