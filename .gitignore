@@ -25,6 +25,7 @@ dev-dist
 *.sw?
 
 # Miscellaneous
+my-notes/*
 MY-NOTES.md
 */MY-NOTES.md
 data-preparation/
