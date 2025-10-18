@@ -8,6 +8,8 @@ import { post } from "aws-amplify/api";
 import type { AppDispatch } from ".";
 
 const amplifyConfig = parseAmplifyConfig(outputs);
+const apiName = Object.keys(outputs.custom.API)[0];
+console.log("Using API Name:", apiName);
 
 Amplify.configure(
   {
@@ -164,7 +166,7 @@ export const send = async (
     try {
       // Send as multipart/form-data
       const sendForm = post({
-        apiName: "expenseFormApi",
+        apiName: apiName,
         path: "submit-expense",
         options: {
           body: apiFormData, // No Content-Type header needed, browser sets correct Content-Type automatically
