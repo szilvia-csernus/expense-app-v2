@@ -5,7 +5,7 @@ const branch = process.env.AWS_BRANCH || "dev";
 
 const schema = a
   .schema({
-    Expense: a
+    ExpenseApp: a
       .model({
         PK: a // Partition Key: e.g. CHURCH#1
           .string()
