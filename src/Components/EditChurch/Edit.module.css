@@ -21,7 +21,7 @@
   font-size: 1rem;
   font-weight: bold;
   color: var(--label-text-color);
-  margin: 2.5rem 0 0.75rem;
+  margin: 0.75rem 0 0.75rem;
 }
 
 .labelSubText {

@@ -25,6 +25,12 @@ const CostPurposeForm: React.FC<props> = ({
   const costPurpose = useAppSelector((state) =>
     state.church.costPurposes.find((item) => item.SK === costPurposeSK)
   );
+  const initialCostPurposeName = costPurpose?.costPurposeName;
+  const initialCostCode =
+    costPurpose && costPurpose.costCode && costPurpose.costCode > 0
+      ? costPurpose.costCode.toString() || ""
+      : "";
+
   const greatestSK =
     useAppSelector((state) => state.church.greatestCostPurposeSKNumber) ?? 0;
 
@@ -35,7 +41,7 @@ const CostPurposeForm: React.FC<props> = ({
     reset: purposeNameReset,
   } = useSimpleInput({
     validateInput: isNotEmpty,
-    initialValue: costPurpose?.costPurposeName,
+    initialValue: initialCostPurposeName,
   });
 
   const {
@@ -45,10 +51,7 @@ const CostPurposeForm: React.FC<props> = ({
     reset: costCodeReset,
   } = useSimpleInput({
     validateInput: noValidate,
-    initialValue:
-      costPurpose && costPurpose.costCode && costPurpose.costCode > 0
-        ? costPurpose.costCode.toString() || ""
-        : "",
+    initialValue: initialCostCode,
   });
 
   const dispatch = useAppDispatch();
@@ -63,6 +66,16 @@ const CostPurposeForm: React.FC<props> = ({
 
     const costCode =
       costCodeValue && costCodeValue !== "0" ? +costCodeValue : undefined;
+
+    if (
+      initialCostCode === costCodeValue &&
+      initialCostPurposeName === purposeNameValue
+    ) {
+      // No changes made
+      setUpdating(false);
+      cancelEditing();
+      return;
+    }
 
     await updateCostPurpose(
       dispatch,
@@ -149,7 +162,6 @@ const CostPurposeForm: React.FC<props> = ({
             onChange={costCodeChangeHandler}
             value={costCodeValue}
             maxLength={100}
-            autoFocus
           />
         </div>
 
