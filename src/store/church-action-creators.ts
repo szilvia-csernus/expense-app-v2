@@ -287,13 +287,13 @@ export const updateCostPurpose = async (
 ) => {
   try {
     const client = generateClient<Schema>();
-    const costCodeValue = costCode !== 0 ? costCode : null; // Convert 0 to null
+    const costCodeValue = costCode && costCode !== 0 ? costCode : null; // Convert 0 to null
     const response = await client.models.ExpenseApp.update(
       {
         PK: churchPK,
         SK: costPurposeSK,
         costPurposeName,
-        ...(costCode ? { costCode: costCodeValue } : {}),
+        costCode: costCodeValue,
       },
       { authMode: "userPool" }
     );
@@ -326,8 +326,8 @@ export const updateCostPurpose = async (
     dispatch(
       churchActions.editCostPurpose({
         SK: costPurposeSK,
-        name: costPurposeName,
-        costCode,
+        costPurposeName,
+        costCode: costCodeValue,
       })
     );
   } catch (error) {
@@ -389,7 +389,7 @@ export const addCostPurpose = async (
 
     dispatch(
       churchActions.addCostPurpose({
-        name: costPurposeName,
+        costPurposeName,
         costCode: costCodeValue,
         SK: response.data?.SK,
       })
