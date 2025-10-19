@@ -16,6 +16,7 @@ export const auth = defineAuth({
           </div>
           <br><br><br>
           Here is the code to confirm your account:
+          <br><br>
           <div style="font-size: 1.5em; color: #a647f9ff;">${createCode()}</div>
           </div>`,
       userInvitation: {
