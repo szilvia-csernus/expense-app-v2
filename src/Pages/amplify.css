@@ -21,7 +21,8 @@
 }
 
 .amplify-heading {
-  color: var(--amplify-colors-grey-80);
+  color: var(--amplify-colors-font-tertiary);
+  padding-top: 1.5rem;
   line-height: 4rem;
   display: flex;
   align-items: center;

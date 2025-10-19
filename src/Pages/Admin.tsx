@@ -27,7 +27,7 @@ const components = {
   },
   ForgotPassword: {
     Header() {
-      return <Heading>Reset Your Password</Heading>;
+      return <Heading>Password Reset</Heading>;
     },
   },
   ConfirmResetPassword: {
@@ -45,28 +45,29 @@ const formFields = {
   },
   forceNewPassword: {
     password: {
-      placeholder: "Your Password:",
+      placeholder: "Your Password",
     },
   },
   forgotPassword: {
     username: {
-      placeholder: "Your email:",
+      label: "Enter your email to reset your password",
+      placeholder: "Your email",
     },
   },
   confirmResetPassword: {
     confirmation_code: {
-      placeholder: "Confirmation Code:",
-      label: "New Label",
+      label: "Enter Code sent to your Email",
+      placeholder: "Enter Code",
       isRequired: false,
     },
     confirm_password: {
-      placeholder: "Confirm Password:",
+      placeholder: "Confirm Password",
     },
   },
   confirmSignIn: {
     confirmation_code: {
-      label: "New Label",
-      placeholder: "Enter your Confirmation Code:",
+      label: "Enter Code sent to your Email",
+      placeholder: "Enter Code",
       isRequired: false,
     },
   },
