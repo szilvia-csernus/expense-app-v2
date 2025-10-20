@@ -4,28 +4,65 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta name="author" content="Szilvia Csernusne Berczes">
-    <meta name="description" content="Expense Reimbursement App for Redeemer Church Members" />
+    <meta name="author" content="Szilvia Csernusne Berczes" />
+    <meta name="description" content="Expense Reimbursement App" />
 
     <!-- The rel="dns-prefetch" and crossorigin="anonymous" settings were recommended by the Vite PWA team.
     vite-pwa-org.netlify.app -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-    <link rel="preconnect" crossorigin="anonymous" href="https://fonts.googleapis.com">
-    <link rel="preconnect" crossorigin="anonymous" href="https://fonts.gstatic.com">
-    <link
-      href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,500;1,500&family=Quicksand:wght@300..700&display=swap"
-      rel="stylesheet" crossorigin="anonymous">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
 
-    <link rel="apple-touch-icon" sizes="180x180" href="/icon-square-180x180.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <meta name="msapplication-TileColor" content="#0097b2">
+    <!-- Preconnect to speed up font loading -->
+    <link
+      rel="preconnect"
+      crossorigin="anonymous"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      crossorigin="anonymous"
+      href="https://fonts.gstatic.com"
+    />
+    <!-- Load fonts asynchronously to prevent render blocking -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,500;1,500&family=Quicksand:wght@300..700&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,500;1,500&family=Quicksand:wght@300..700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/icon-square-180x180.png"
+    />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <meta name="msapplication-TileColor" content="#0097b2" />
     <title>Expense Reimbursement</title>
   </head>
   <body>
     <div id="overlay"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Font loading script -->
+    <script>
+      // Remove .font-loading class once fonts are loaded
+      if ("fonts" in document) {
+        Promise.all([
+          document.fonts.load('500 1em "Josefin Sans"'),
+          document.fonts.load("300 1em Quicksand"),
+        ]).then(() => {
+          document.documentElement.classList.remove("font-loading");
+        });
+      }
+    </script>
   </body>
 </html>

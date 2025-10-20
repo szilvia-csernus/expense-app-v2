@@ -1,10 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-// import dotenv from "dotenv";
 import { VitePWA } from "vite-plugin-pwa";
-
-// Load environment variables
-// dotenv.config();
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -16,20 +12,21 @@ export default defineConfig({
       devOptions: {
         enabled: true,
       },
-      includeAssets: [
-        "favicon-32x32.png",
-        "icon-144x144.png",
-        "icon-36x36.png",
-        "icon-48x48.png",
-        "icon-96x96.png",
-        "icon-192x192.png",
-        "icon-512x512.png",
-        "icon-square-180x180.png",
-      ],
+      // includeAssets: [
+      //   "favicon-32x32.png",
+      //   "icon-144x144.png",
+      //   "icon-36x36.png",
+      //   "icon-48x48.png",
+      //   "icon-96x96.png",
+      //   "icon-192x192.png",
+      //   "icon-512x512.png",
+      //   "icon-square-180x180.png",
+      // ],
       workbox: {
-        globPatterns: ["**/*.{js,jsx,ts,tsx,css,html,ico,png,webmanifest}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp}"],
         skipWaiting: true,
         clientsClaim: true,
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -192,4 +189,32 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    target: "es2020",
+    cssTarget: "chrome90",
+    cssCodeSplit: true,
+    minify: "terser",
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-amplify-core": ["aws-amplify"],
+          "vendor-amplify-ui": ["@aws-amplify/ui-react"],
+          "vendor-amplify-storage": ["@aws-amplify/ui-react-storage"],
+          "vendor-redux": ["react-redux", "@reduxjs/toolkit"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+    sourcemap: false,
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "aws-amplify"],
+  },
 });
