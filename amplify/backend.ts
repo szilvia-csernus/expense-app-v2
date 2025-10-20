@@ -38,7 +38,8 @@ const branch = process.env.AWS_BRANCH || "dev";
 // These origins are used for the preflight CORS requests (OPTIONS)
 const ORIGINS = [
   `https://${branch}.${appId}.amplifyapp.com`, // Test / Production environment
-  "http://localhost:5173", // Local development
+  "http://localhost:5173", // Local frontend dev server
+  "http://localhost:4173", // Local frontend preview server
 ];
 
 // create Rest API
