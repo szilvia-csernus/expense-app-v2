@@ -1,4 +1,4 @@
-import { Amplify } from "aws-amplify";
+import { Amplify } from "@aws-amplify/core";
 import {
   generateMainMessage,
   generateMessageToSubmitter,
@@ -29,6 +29,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   const allowedOrigins = [
     `https://${branch}.${appId}.amplifyapp.com`,
     "http://localhost:5173",
+    "http://localhost:4173",
   ];
 
   const corsHeaders = {
