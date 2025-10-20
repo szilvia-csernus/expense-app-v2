@@ -1,6 +1,6 @@
 import React from "react";
 import classes from "./Footer.module.css";
-import logoUrl from "../images/expLogo.png";
+import logoUrl from "../images/expLogo.webp";
 
 function Footer({ children }: { children?: React.ReactNode }) {
   return (
