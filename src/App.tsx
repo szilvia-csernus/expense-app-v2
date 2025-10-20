@@ -1,7 +1,9 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./Pages/Home";
+import { lazy } from "react";
 // import ErrorPage from "./Pages/ErrorPage";
-import Admin from "./Pages/Admin";
+
+const Admin = lazy(() => import("./Pages/Admin"));
 
 const router = createBrowserRouter([
   {
