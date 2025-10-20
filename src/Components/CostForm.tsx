@@ -9,8 +9,8 @@ import { useAppSelector } from "../store/index";
 import { formActions } from "../store/form-slice";
 import ChurchLogo from "./ChurchLogo";
 import { useAppDispatch } from "../store/index";
-import Loader from "./Loader";
 import { isNotEmpty, isEmail, noValidate } from "../Utils/validations";
+import PageLoader from "./PageLoader";
 
 const CostForm = () => {
   const [formValid, setFormValid] = useState(false);
@@ -229,313 +229,290 @@ const CostForm = () => {
 
   return (
     <div className={classes.content}>
-      {fetchingInProcess && <Loader />}
+      {fetchingInProcess && <PageLoader />}
 
-      {!fetchingInProcess && (
-        <>
-          <ChurchLogo />
-          <h1 className={classes.header}>Expense Form</h1>
-          <br />
-          <div className={classes.formBody}>
-            <form className={classes.form} onSubmit={submitHandler}>
-              {/* PERSONAL INFORMATION */}
-              <fieldset>
-                <h2>Personal Information</h2>
+      <>
+        <ChurchLogo />
+        <h1 className={classes.header}>Expense Form</h1>
+        <br />
+        <div className={classes.formBody}>
+          <form className={classes.form} onSubmit={submitHandler}>
+            {/* PERSONAL INFORMATION */}
+            <fieldset>
+              <h2>Personal Information</h2>
 
-                {/* Name  */}
-                <label htmlFor="name" className={classes.labelText}>
-                  Name *
-                </label>
-                <p className={classes.labelSubText}>
-                  Please give your name here in case we need to contact you.
-                </p>
-                <input
-                  id="name"
-                  type="text"
-                  name="name"
-                  className={nameClassNames}
-                  onChange={nameChangeHandler}
-                  onBlur={nameBlurHandler}
-                  value={nameValue}
-                  autoComplete="name"
-                  maxLength={200}
-                />
-                <div
-                  className={
-                    nameHasError
-                      ? classes.feedbackInvalid
-                      : classes.feedbackValid
-                  }
-                >
-                  Please provide your name.
-                </div>
-
-                {/* Email  */}
-                <label htmlFor="email" className={classes.labelText}>
-                  Email address *
-                </label>
-                <p className={classes.labelSubText}>
-                  Your email address where we can reach you.
-                </p>
-                <input
-                  id="email"
-                  type="email"
-                  name="email"
-                  className={emailClassNames}
-                  onChange={emailChangeHandler}
-                  onBlur={emailBlurHandler}
-                  value={emailValue}
-                  autoComplete="email"
-                  maxLength={100}
-                />
-                <div
-                  className={
-                    emailHasError
-                      ? classes.feedbackInvalid
-                      : classes.feedbackValid
-                  }
-                >
-                  Please provide your email address.
-                </div>
-              </fieldset>
-
-              {/* EXPENSES */}
-              <fieldset>
-                <h2>Expenses</h2>
-
-                {/* Selected Church  */}
-                {/* <p className={classes.labelSubText}>
-                  Your Selected Church is <strong>{churchName}</strong>. Is this
-                  not your church?{" "}
-                  <span
-                    onClick={handleSelectChurch}
-                    className={classes.linkText}
-                  >
-                    Change it here.
-                  </span>
-                </p> */}
-
-                {/* Purpose  */}
-                <label htmlFor="purpose" className={classes.labelText}>
-                  Purpose *
-                </label>
-                <p className={classes.labelSubText}>
-                  Please select a purpose for the expense.
-                </p>
-                <select
-                  id="purpose"
-                  name="purpose"
-                  className={purposeClassNames}
-                  onChange={purposeChangeHandler}
-                  onBlur={purposeBlurHandler}
-                  value={purposeValue}
-                >
-                  <option value="" disabled>
-                    Select a purpose
-                  </option>
-                  {purposes.map((purpose) =>
-                    purpose.costCode ? (
-                      <option
-                        key={`${purpose.costPurposeName} ${purpose.costCode}`}
-                        value={`${purpose.costPurposeName} (${purpose.costCode})`}
-                      >
-                        {`${purpose.costPurposeName} (${purpose.costCode})`}
-                      </option>
-                    ) : (
-                      <option
-                        key={purpose.costPurposeName}
-                        value={purpose.costPurposeName}
-                      >
-                        {purpose.costPurposeName}
-                      </option>
-                    )
-                  )}
-                </select>
-
-                <div
-                  className={
-                    purposeHasError
-                      ? classes.feedbackInvalid
-                      : classes.feedbackValid
-                  }
-                >
-                  Please select a purpose.
-                </div>
-
-                {/* Date  */}
-                <label htmlFor="date" className={classes.labelText}>
-                  Date of expense (on receipt) *
-                </label>
-                <p className={classes.labelSubText}>
-                  If you have many receipts, then use the date from the latest.
-                  If they relate to multiple years, then it is best to group
-                  them by years into separate submissions to help our
-                  bookkeeping.
-                </p>
-                <input
-                  id="date"
-                  type="date"
-                  name="date"
-                  className={dateClassNames}
-                  onChange={dateChangeHandler}
-                  onBlur={dateBlurHandler}
-                  value={dateValue}
-                />
-                <div
-                  className={
-                    dateHasError
-                      ? classes.feedbackInvalid
-                      : classes.feedbackValid
-                  }
-                >
-                  Please select a date.
-                </div>
-
-                {/* Description  */}
-                <label htmlFor="description" className={classes.labelText}>
-                  Description *
-                </label>
-                <p className={classes.labelSubText}>
-                  Short description for the expense.
-                </p>
-                <input
-                  id="description"
-                  type="text"
-                  name="description"
-                  className={descriptionClassNames}
-                  onChange={descriptionChangeHandler}
-                  onBlur={descriptionBlurHandler}
-                  value={descriptionValue}
-                  maxLength={200}
-                />
-                <div
-                  className={
-                    descriptionHasError
-                      ? classes.feedbackInvalid
-                      : classes.feedbackValid
-                  }
-                >
-                  Please provide a short description.
-                </div>
-
-                {/* Total  */}
-                <label htmlFor="total" className={classes.labelText}>
-                  Total *
-                </label>
-                <p className={classes.labelSubText}>
-                  The total amount in EUR to be reimbursed.
-                </p>
-                <input
-                  id="total"
-                  type="total"
-                  name="total"
-                  className={totalClassNames}
-                  onChange={totalChangeHandler}
-                  onBlur={totalBlurHandler}
-                  value={totalValue}
-                  maxLength={10}
-                />
-                <div
-                  className={
-                    totalHasError
-                      ? classes.feedbackInvalid
-                      : classes.feedbackValid
-                  }
-                >
-                  Invalid amount.
-                </div>
-
-                {/* Receipts  */}
-                <span className={classes.labelText}>Receipt(s) *</span>
-                <p className={classes.labelSubText}>
-                  Please take/upload a clear picture or PDF of the receipt of
-                  the expense made. Accepted file types: png, jpg, jpeg, pdf.
-                  Max upload: 4MB.
-                </p>
-
-                <FileUploader
-                  selectedFile={selectedFile}
-                  setSelectedFile={setSelectedFile}
-                  fileError={fileError}
-                  setFileError={setFileError}
-                  fileList={fileList}
-                  setFileList={setFileList}
-                  totalFileSize={totalFileSize}
-                  setTotalFileSize={setTotalFileSize}
-                />
-              </fieldset>
-
-              {/* REIMBURSEMENT DETAILS  */}
-              <fieldset>
-                <h2>Reimbursement Details (optional)</h2>
-                {/* Bank Account  */}
-                <label htmlFor="iban" className={classes.labelText}>
-                  Bank Account Number (IBAN)
-                </label>
-                <p className={classes.labelSubText}>
-                  If you are not a regular donor of our church, then please give
-                  us an IBAN where we can send you the reimbursement.
-                </p>
-                <input
-                  id="iban"
-                  type="text"
-                  name="iban"
-                  className={ibanClassNames}
-                  onChange={ibanChangeHandler}
-                  onBlur={ibanBlurHandler}
-                  value={ibanValue}
-                  autoComplete="on"
-                  maxLength={34}
-                />
-                <div
-                  className={
-                    ibanHasError
-                      ? classes.feedbackInvalid
-                      : classes.feedbackValid
-                  }
-                >
-                  Please provide your bank account number.
-                </div>
-
-                {/* Name of Bank Account Holder  */}
-                <label htmlFor="accountName" className={classes.labelText}>
-                  Name of Bank Account Holder
-                </label>
-                <p className={classes.labelSubText}>
-                  Please enter the name of the account holder if it is different
-                  from the name entered at the top of this form.
-                </p>
-                <input
-                  id="accountName"
-                  type="accountName"
-                  name="accountName"
-                  className={accountNameClassNames}
-                  onChange={accountNameChangeHandler}
-                  onBlur={accountNameBlurHandler}
-                  value={accountNameValue}
-                  maxLength={200}
-                />
-                <div
-                  className={
-                    accountNameHasError
-                      ? classes.feedbackInvalid
-                      : classes.feedbackValid
-                  }
-                >
-                  Invalid name.
-                </div>
-              </fieldset>
-
-              <br />
-              <div className={classes.footer}>
-                <PrimaryButton type="submit" disabled={submitting}>
-                  Submit
-                </PrimaryButton>
+              {/* Name  */}
+              <label htmlFor="name" className={classes.labelText}>
+                Name *
+              </label>
+              <p className={classes.labelSubText}>
+                Please give your name here in case we need to contact you.
+              </p>
+              <input
+                id="name"
+                type="text"
+                name="name"
+                className={nameClassNames}
+                onChange={nameChangeHandler}
+                onBlur={nameBlurHandler}
+                value={nameValue}
+                autoComplete="name"
+                maxLength={200}
+              />
+              <div
+                className={
+                  nameHasError ? classes.feedbackInvalid : classes.feedbackValid
+                }
+              >
+                Please provide your name.
               </div>
-            </form>
-          </div>
-        </>
-      )}
+
+              {/* Email  */}
+              <label htmlFor="email" className={classes.labelText}>
+                Email address *
+              </label>
+              <p className={classes.labelSubText}>
+                Your email address where we can reach you.
+              </p>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                className={emailClassNames}
+                onChange={emailChangeHandler}
+                onBlur={emailBlurHandler}
+                value={emailValue}
+                autoComplete="email"
+                maxLength={100}
+              />
+              <div
+                className={
+                  emailHasError
+                    ? classes.feedbackInvalid
+                    : classes.feedbackValid
+                }
+              >
+                Please provide your email address.
+              </div>
+            </fieldset>
+
+            {/* EXPENSES */}
+            <fieldset>
+              <h2>Expenses</h2>
+              <label htmlFor="purpose" className={classes.labelText}>
+                Purpose *
+              </label>
+              <p className={classes.labelSubText}>
+                Please select a purpose for the expense.
+              </p>
+              <select
+                id="purpose"
+                name="purpose"
+                className={purposeClassNames}
+                onChange={purposeChangeHandler}
+                onBlur={purposeBlurHandler}
+                value={purposeValue}
+              >
+                <option value="" disabled>
+                  Select a purpose
+                </option>
+                {purposes.map((purpose) =>
+                  purpose.costCode ? (
+                    <option
+                      key={`${purpose.costPurposeName} ${purpose.costCode}`}
+                      value={`${purpose.costPurposeName} (${purpose.costCode})`}
+                    >
+                      {`${purpose.costPurposeName} (${purpose.costCode})`}
+                    </option>
+                  ) : (
+                    <option
+                      key={purpose.costPurposeName}
+                      value={purpose.costPurposeName}
+                    >
+                      {purpose.costPurposeName}
+                    </option>
+                  )
+                )}
+              </select>
+
+              <div
+                className={
+                  purposeHasError
+                    ? classes.feedbackInvalid
+                    : classes.feedbackValid
+                }
+              >
+                Please select a purpose.
+              </div>
+
+              {/* Date  */}
+              <label htmlFor="date" className={classes.labelText}>
+                Date of expense (on receipt) *
+              </label>
+              <p className={classes.labelSubText}>
+                If you have many receipts, then use the date from the latest. If
+                they relate to multiple years, then it is best to group them by
+                years into separate submissions to help our bookkeeping.
+              </p>
+              <input
+                id="date"
+                type="date"
+                name="date"
+                className={dateClassNames}
+                onChange={dateChangeHandler}
+                onBlur={dateBlurHandler}
+                value={dateValue}
+              />
+              <div
+                className={
+                  dateHasError ? classes.feedbackInvalid : classes.feedbackValid
+                }
+              >
+                Please select a date.
+              </div>
+
+              {/* Description  */}
+              <label htmlFor="description" className={classes.labelText}>
+                Description *
+              </label>
+              <p className={classes.labelSubText}>
+                Short description for the expense.
+              </p>
+              <input
+                id="description"
+                type="text"
+                name="description"
+                className={descriptionClassNames}
+                onChange={descriptionChangeHandler}
+                onBlur={descriptionBlurHandler}
+                value={descriptionValue}
+                maxLength={200}
+              />
+              <div
+                className={
+                  descriptionHasError
+                    ? classes.feedbackInvalid
+                    : classes.feedbackValid
+                }
+              >
+                Please provide a short description.
+              </div>
+
+              {/* Total  */}
+              <label htmlFor="total" className={classes.labelText}>
+                Total *
+              </label>
+              <p className={classes.labelSubText}>
+                The total amount in EUR to be reimbursed.
+              </p>
+              <input
+                id="total"
+                type="total"
+                name="total"
+                className={totalClassNames}
+                onChange={totalChangeHandler}
+                onBlur={totalBlurHandler}
+                value={totalValue}
+                maxLength={10}
+              />
+              <div
+                className={
+                  totalHasError
+                    ? classes.feedbackInvalid
+                    : classes.feedbackValid
+                }
+              >
+                Invalid amount.
+              </div>
+
+              {/* Receipts  */}
+              <span className={classes.labelText}>Receipt(s) *</span>
+              <p className={classes.labelSubText}>
+                Please take/upload a clear picture or PDF of the receipt of the
+                expense made. Accepted file types: png, jpg, jpeg, pdf. Max
+                upload: 4MB.
+              </p>
+
+              <FileUploader
+                selectedFile={selectedFile}
+                setSelectedFile={setSelectedFile}
+                fileError={fileError}
+                setFileError={setFileError}
+                fileList={fileList}
+                setFileList={setFileList}
+                totalFileSize={totalFileSize}
+                setTotalFileSize={setTotalFileSize}
+              />
+            </fieldset>
+
+            {/* REIMBURSEMENT DETAILS  */}
+            <fieldset>
+              <h2>Reimbursement Details (optional)</h2>
+              {/* Bank Account  */}
+              <label htmlFor="iban" className={classes.labelText}>
+                Bank Account Number (IBAN)
+              </label>
+              <p className={classes.labelSubText}>
+                If you are not a regular donor of our church, then please give
+                us an IBAN where we can send you the reimbursement.
+              </p>
+              <input
+                id="iban"
+                type="text"
+                name="iban"
+                className={ibanClassNames}
+                onChange={ibanChangeHandler}
+                onBlur={ibanBlurHandler}
+                value={ibanValue}
+                autoComplete="on"
+                maxLength={34}
+              />
+              <div
+                className={
+                  ibanHasError ? classes.feedbackInvalid : classes.feedbackValid
+                }
+              >
+                Please provide your bank account number.
+              </div>
+
+              {/* Name of Bank Account Holder  */}
+              <label htmlFor="accountName" className={classes.labelText}>
+                Name of Bank Account Holder
+              </label>
+              <p className={classes.labelSubText}>
+                Please enter the name of the account holder if it is different
+                from the name entered at the top of this form.
+              </p>
+              <input
+                id="accountName"
+                type="accountName"
+                name="accountName"
+                className={accountNameClassNames}
+                onChange={accountNameChangeHandler}
+                onBlur={accountNameBlurHandler}
+                value={accountNameValue}
+                maxLength={200}
+              />
+              <div
+                className={
+                  accountNameHasError
+                    ? classes.feedbackInvalid
+                    : classes.feedbackValid
+                }
+              >
+                Invalid name.
+              </div>
+            </fieldset>
+
+            <br />
+            <div className={classes.footer}>
+              <PrimaryButton type="submit" disabled={submitting}>
+                Submit
+              </PrimaryButton>
+            </div>
+          </form>
+        </div>
+      </>
     </div>
   );
 };
