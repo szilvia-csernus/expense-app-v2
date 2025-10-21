@@ -24,13 +24,6 @@ dev-dist
 *.sln
 *.sw?
 
-# Miscellaneous
-my-notes
-my-notes/*
-MY-NOTES.md
-*/MY-NOTES.md
-data-preparation/
-
 # amplify
 .amplify
 amplify_outputs*
@@ -43,3 +36,10 @@ amplifyconfiguration*
 */**/client_secret*
 token.json
 credentials.json
+
+# Miscellaneous
+my-notes
+my-notes/*
+MY-NOTES.md
+*/MY-NOTES.md
+data-preparation/
