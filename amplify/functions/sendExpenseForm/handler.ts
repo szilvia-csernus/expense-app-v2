@@ -16,9 +16,13 @@ import { parseMultipart } from "./parseMultipart";
 
 export const handler: APIGatewayProxyHandler = async (event) => {
   // Check if origin is allowed ( for requests outside a modern browser where CORS is not enforced.)
-  const origin = event.headers?.origin || event.headers?.Origin || "*";
+  const origin = event.headers?.origin || event.headers?.Origin;
+  const referer = event.headers?.referer || event.headers?.Referer;
   const appId = process.env.AWS_APP_ID;
   const branch = process.env.AWS_BRANCH;
+  const env = process.env.ENV || "dev";
+  const devOrigins =
+    env === "dev" ? ["http://localhost:5173", "http://localhost:4173"] : [];
 
   if (!appId || !branch) {
     console.warn("AWS_APP_ID or AWS_BRANCH not set, using defaults:", {
@@ -28,8 +32,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   }
   const allowedOrigins = [
     `https://${branch}.${appId}.amplifyapp.com`,
-    "http://localhost:5173",
-    "http://localhost:4173",
+    ...devOrigins,
   ];
 
   const corsHeaders = {
@@ -64,6 +67,25 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       headers: corsHeaders,
       body: "",
     };
+  }
+
+  if (event.httpMethod !== "OPTIONS") {
+    // Don't block preflight requests
+    // Check if request has a valid origin or referer
+    const hasValidOrigin = origin && allowedOrigins.includes(origin);
+    const hasValidReferer =
+      referer && allowedOrigins.some((allowed) => referer.startsWith(allowed));
+
+    if (!hasValidOrigin && !hasValidReferer) {
+      console.log(
+        `Blocked request from invalid origin: ${origin}, referer: ${referer}`
+      );
+      return {
+        statusCode: 403,
+        headers: corsHeaders,
+        body: JSON.stringify({ error: "Forbidden - Invalid origin" }),
+      };
+    }
   }
 
   // Rate limiting
