@@ -11,7 +11,6 @@ import {
   RestApi,
   Period,
   UsagePlan,
-  ApiKey,
   GatewayResponse,
   ResponseType,
   AuthorizationType,
@@ -34,12 +33,14 @@ const apiStack = Stack.of(backend.sendExpenseFormFunction.resources.lambda);
 
 const appId = process.env.AWS_APP_ID;
 const branch = process.env.AWS_BRANCH || "dev";
+const env = process.env.ENV || "dev";
+const devOrigins =
+  env === "dev" ? ["http://localhost:5173", "http://localhost:4173"] : [];
 
 // These origins are used for the preflight CORS requests (OPTIONS)
 const ORIGINS = [
   `https://${branch}.${appId}.amplifyapp.com`, // Test / Production environment
-  "http://localhost:5173", // Local frontend dev server
-  "http://localhost:4173", // Local frontend preview server
+  ...devOrigins, // Local frontend preview server
 ];
 
 // create Rest API
@@ -59,7 +60,6 @@ const restApi = new RestApi(apiStack, "RestApi", {
       "Content-Type",
       "X-Amz-Date",
       "Authorization",
-      "X-Api-Key",
       "X-Amz-Security-Token",
       "X-Amz-User-Agent",
     ],
@@ -84,7 +84,7 @@ const submitExpenseResource = restApi.root.addResource("submit-expense", {
 
 // add methods you would like to create to the resource path
 submitExpenseResource.addMethod("POST", lambdaIntegration, {
-  apiKeyRequired: true,
+  apiKeyRequired: false,
   methodResponses: [
     { statusCode: "200" }, // Success
     { statusCode: "400" }, // Bad Request (validation errors)
@@ -144,13 +144,6 @@ usagePlan.addApiStage({
   api: restApi,
   stage: restApi.deploymentStage,
 });
-
-// API key is needed for the usage plan
-const apiKey = new ApiKey(apiStack, "ExpenseFormApiKey", {
-  description: `API Key for Expense Form - ${branch}, used as a public api key in frontend`,
-});
-
-usagePlan.addApiKey(apiKey);
 
 // Output API endpoint for frontend
 backend.addOutput({
@@ -270,7 +263,7 @@ new GatewayResponse(apiStack, "Default4xxWithCors", {
   type: ResponseType.DEFAULT_4XX,
   responseHeaders: {
     "Access-Control-Allow-Origin": "'*'",
-    "Access-Control-Allow-Headers": "'Content-Type,x-api-key'",
+    "Access-Control-Allow-Headers": "'Content-Type'",
     "Access-Control-Allow-Methods": "'OPTIONS,POST'",
   },
 });
@@ -279,7 +272,7 @@ new GatewayResponse(apiStack, "Default5xxWithCors", {
   type: ResponseType.DEFAULT_5XX,
   responseHeaders: {
     "Access-Control-Allow-Origin": "'*'",
-    "Access-Control-Allow-Headers": "'Content-Type,x-api-key'",
+    "Access-Control-Allow-Headers": "'Content-Type'",
     "Access-Control-Allow-Methods": "'OPTIONS,POST'",
   },
 });
