@@ -18,7 +18,7 @@ The original solution to this submission process was a WordPress website, which 
 
 ## Functionality
 
-This app allows the end-users to submit their expense forms with attached receipts in various image or pdf formats. The incoming forms and the images are processed and are converted into one multi-page pdf document, and sent to the respective finance teams.
+This app allows the end-users to submit their expense forms with attached receipts in various image or pdf formats. The incoming forms and the images are processed and converted into one multi-page pdf document, and sent to the finance contact's email.
 
 Admins can edit the church's details, including the logo, finance team's contacts and other relevant information via a secure admin interface. The admin interface is secured via AWS Cognito user authentication.
 
@@ -26,7 +26,7 @@ When a user submits an expense form, they receive a feedback about the successfu
 
 The app is a `Progressive Web App (PWA)`, meaning it is installable on any desktop or mobile devices. Caching is also utilised to allow reduced loading times on subsequent usage as well as for offline access.
 
-As per the requirement of the Rotterdam Finance Team, the app does not retain any end-user or expense data. The database only stores the required data the purpose of creating the form and sending the generated documents.
+As per the requirement of the Rotterdam Finance Team, the app does not retain any end-user or expense data. The database only stores the required church data for the purpose of creating the form and sending the generated documents.
 
 ---
 
