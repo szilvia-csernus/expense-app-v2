@@ -40,7 +40,7 @@ export async function getChurchDetailsAndUpdateCounter(churchPK: string) {
     }
   `;
   // Create a client
-  const client = generateClient<Schema>();
+  const client = generateClient<Schema>({ authMode: "identityPool" });
 
   // Makes sure client.models exists before trying to access it
   if (!client.models) {
@@ -62,7 +62,7 @@ export async function getChurchDetailsAndUpdateCounter(churchPK: string) {
         PK: churchPK,
         SK: "PROFILE",
       },
-      authMode: "apiKey",
+      authMode: "identityPool",
     })) as GraphQLResult<GetChurchProfileResponse>;
 
     console.log("GraphQL result:", JSON.stringify(result, null, 2));
@@ -106,7 +106,7 @@ export async function getChurchDetailsAndUpdateCounter(churchPK: string) {
           SK: "PROFILE",
           claimsCounter: newCounter,
         },
-        authMode: "apiKey",
+        authMode: "identityPool",
       })) as GraphQLResult<UpdateChurchProfileResponse>;
 
       console.log("Update result:", JSON.stringify(updateResult, null, 2));
