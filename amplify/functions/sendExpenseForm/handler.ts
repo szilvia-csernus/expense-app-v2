@@ -1,5 +1,10 @@
 import { Amplify } from "@aws-amplify/core";
 import {
+  getAmplifyDataClientConfig,
+  type DataClientEnv,
+} from "@aws-amplify/backend-function/runtime";
+import { fetchAuthSession } from "aws-amplify/auth";
+import {
   generateMainMessage,
   generateMessageToSubmitter,
   generateMessageToFinance,
@@ -13,6 +18,20 @@ import { getChurchDetailsAndUpdateCounter } from "./getChurchDetailsAndUpdateCou
 import { checkMonthlyLimit } from "./checkMonthlyLimit";
 import { checkRateLimit } from "./checkIPRateLimit";
 import { parseMultipart } from "./parseMultipart";
+
+let configureAmplifyPromise: Promise<void> | undefined;
+
+const ensureAmplifyConfigured = async () => {
+  if (!configureAmplifyPromise) {
+    configureAmplifyPromise = (async () => {
+      const { resourceConfig, libraryOptions } =
+        await getAmplifyDataClientConfig(process.env as DataClientEnv);
+      Amplify.configure(resourceConfig, libraryOptions);
+      console.log("Amplify configured for data client");
+    })();
+  }
+  await configureAmplifyPromise;
+};
 
 export const handler: APIGatewayProxyHandler = async (event) => {
   // Check if origin is allowed ( for requests outside a modern browser where CORS is not enforced.)
@@ -48,17 +67,11 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     corsHeaders["Access-Control-Allow-Origin"] = allowedOrigins[0];
   }
 
-  console.log("Environment variables:", JSON.stringify(process.env, null, 2));
-
   console.log(
     "AMPLIFY_DATA_GRAPHQL_ENDPOINT:",
     process.env.AMPLIFY_DATA_GRAPHQL_ENDPOINT || "missing"
   );
   console.log("AWS_REGION:", process.env.AWS_REGION || "missing");
-  console.log(
-    "AMPLIFY_DATA_API_KEY exists:",
-    process.env.AMPLIFY_DATA_API_KEY ? process.env.AMPLIFY_DATA_API_KEY : "NO"
-  );
 
   // Handle CORS preflight
   if (event.httpMethod === "OPTIONS") {
@@ -116,26 +129,12 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     const formData = JSON.parse(fields.formData);
     const churchPK = fields.churchPK;
 
-    const apiKey = process.env.AMPLIFY_DATA_API_KEY;
-    if (!apiKey) {
-      console.error("API Key environment variable is missing!");
-      return {
-        statusCode: 500,
-        headers: corsHeaders,
-        body: JSON.stringify({ error: "Server configuration error" }),
-      };
-    }
+    await ensureAmplifyConfigured();
 
-    // Configure Amplify for appsync graphql calls
-    Amplify.configure({
-      API: {
-        GraphQL: {
-          endpoint: process.env.AMPLIFY_DATA_GRAPHQL_ENDPOINT!,
-          region: process.env.AWS_REGION,
-          defaultAuthMode: "apiKey",
-          apiKey: process.env.AMPLIFY_DATA_API_KEY!,
-        },
-      },
+    const session = await fetchAuthSession();
+    console.log("Fetched auth session", {
+      hasCredentials: Boolean(session.credentials),
+      identityId: session.identityId ?? "none",
     });
 
     // Validate form data
