@@ -1,6 +1,6 @@
 import classes from "./Form.module.css";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import useInput from "../Hooks/use-input";
 import { PrimaryButton } from "./Buttons";
 import FileUploader from "./FileUploader";
@@ -31,6 +31,16 @@ const CostForm = () => {
   const submitting = useAppSelector((state) => state.form.submitting);
 
   const dispatch = useAppDispatch();
+
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+  const emailInputRef = useRef<HTMLInputElement | null>(null);
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
+  const descriptionInputRef = useRef<HTMLInputElement | null>(null);
+  const purposeSelectRef = useRef<HTMLSelectElement | null>(null);
+  const totalInputRef = useRef<HTMLInputElement | null>(null);
+  const ibanInputRef = useRef<HTMLInputElement | null>(null);
+  const accountNameInputRef = useRef<HTMLInputElement | null>(null);
+  const fileSectionRef = useRef<HTMLDivElement | null>(null);
 
   const {
     value: nameValue,
@@ -133,6 +143,34 @@ const CostForm = () => {
     accountNameIsValid,
   ]);
 
+  const scrollToFirstInvalidInput = () => {
+    const fieldOrder = [
+      { isValid: nameIsValid, ref: nameInputRef },
+      { isValid: emailIsValid, ref: emailInputRef },
+      { isValid: purposeIsValid, ref: purposeSelectRef },
+      { isValid: dateIsValid, ref: dateInputRef },
+      { isValid: descriptionIsValid, ref: descriptionInputRef },
+      { isValid: totalIsValid, ref: totalInputRef },
+      { isValid: fileList.length > 0 && !fileError, ref: fileSectionRef },
+      { isValid: ibanIsValid, ref: ibanInputRef },
+      { isValid: accountNameIsValid, ref: accountNameInputRef },
+    ];
+
+    const firstInvalidField = fieldOrder.find((field) => !field.isValid);
+
+    const target = firstInvalidField?.ref.current;
+
+    if (target) {
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      if ("focus" in target && typeof target.focus === "function") {
+        target.focus({ preventScroll: true });
+      }
+    }
+  };
+
   const submitHandler = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     dispatch(formActions.setSubmitting());
@@ -146,7 +184,11 @@ const CostForm = () => {
       totalBlurHandler();
       ibanBlurHandler();
       accountNameBlurHandler();
-      dispatch(formActions.resetSubmitting());
+      scrollToFirstInvalidInput();
+      requestAnimationFrame(() => {
+        scrollToFirstInvalidInput();
+        dispatch(formActions.resetSubmitting());
+      });
       return;
     } else {
       const formData = new FormData();
@@ -258,6 +300,7 @@ const CostForm = () => {
                 value={nameValue}
                 autoComplete="name"
                 maxLength={200}
+                ref={nameInputRef}
               />
               <div
                 className={
@@ -284,6 +327,7 @@ const CostForm = () => {
                 value={emailValue}
                 autoComplete="email"
                 maxLength={100}
+                ref={emailInputRef}
               />
               <div
                 className={
@@ -312,6 +356,7 @@ const CostForm = () => {
                 onChange={purposeChangeHandler}
                 onBlur={purposeBlurHandler}
                 value={purposeValue}
+                ref={purposeSelectRef}
               >
                 <option value="" disabled>
                   Select a purpose
@@ -362,6 +407,7 @@ const CostForm = () => {
                 onChange={dateChangeHandler}
                 onBlur={dateBlurHandler}
                 value={dateValue}
+                ref={dateInputRef}
               />
               <div
                 className={
@@ -387,6 +433,7 @@ const CostForm = () => {
                 onBlur={descriptionBlurHandler}
                 value={descriptionValue}
                 maxLength={200}
+                ref={descriptionInputRef}
               />
               <div
                 className={
@@ -414,6 +461,7 @@ const CostForm = () => {
                 onBlur={totalBlurHandler}
                 value={totalValue}
                 maxLength={10}
+                ref={totalInputRef}
               />
               <div
                 className={
@@ -433,16 +481,18 @@ const CostForm = () => {
                 upload: 4MB.
               </p>
 
-              <FileUploader
-                selectedFile={selectedFile}
-                setSelectedFile={setSelectedFile}
-                fileError={fileError}
-                setFileError={setFileError}
-                fileList={fileList}
-                setFileList={setFileList}
-                totalFileSize={totalFileSize}
-                setTotalFileSize={setTotalFileSize}
-              />
+              <div ref={fileSectionRef}>
+                <FileUploader
+                  selectedFile={selectedFile}
+                  setSelectedFile={setSelectedFile}
+                  fileError={fileError}
+                  setFileError={setFileError}
+                  fileList={fileList}
+                  setFileList={setFileList}
+                  totalFileSize={totalFileSize}
+                  setTotalFileSize={setTotalFileSize}
+                />
+              </div>
             </fieldset>
 
             {/* REIMBURSEMENT DETAILS  */}
@@ -466,6 +516,7 @@ const CostForm = () => {
                 value={ibanValue}
                 autoComplete="on"
                 maxLength={34}
+                ref={ibanInputRef}
               />
               <div
                 className={
@@ -492,6 +543,7 @@ const CostForm = () => {
                 onBlur={accountNameBlurHandler}
                 value={accountNameValue}
                 maxLength={200}
+                ref={accountNameInputRef}
               />
               <div
                 className={
