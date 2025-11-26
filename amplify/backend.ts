@@ -3,7 +3,7 @@ import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { storage } from "./storage/resource";
 import { sendExpenseFormFunction } from "./functions/sendExpenseForm/resource";
-import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { Stack } from "aws-cdk-lib";
 import {
   Cors,
@@ -28,12 +28,14 @@ export const backend = defineBackend({
   sendExpenseFormFunction,
 });
 
-// const apiStack = backend.createStack("api-stack");
 const apiStack = Stack.of(backend.sendExpenseFormFunction.resources.lambda);
 
 const appId = process.env.AWS_APP_ID;
 const branch = process.env.AWS_BRANCH || "dev";
 const env = process.env.ENV || "dev";
+// Get current AWS account and region dynamically
+const region = Stack.of(apiStack).region;
+const accountId = Stack.of(apiStack).account;
 const devOrigins =
   env === "dev" ? ["http://localhost:5173", "http://localhost:4173"] : [];
 
@@ -104,27 +106,6 @@ submitExpenseResource.addProxy({
   defaultIntegration: lambdaIntegration,
 });
 
-// create a new IAM policy to allow Invoke access to the API
-const apiRestPolicy = new Policy(apiStack, "RestApiPolicy", {
-  statements: [
-    new PolicyStatement({
-      actions: ["execute-api:Invoke"],
-      resources: [
-        `${restApi.arnForExecuteApi("*", "/submit-expense", "dev")}`,
-        `${restApi.arnForExecuteApi("*", "/submit-expense/*", "dev")}`,
-      ],
-    }),
-  ],
-});
-
-// attach the policy to the authenticated and unauthenticated IAM roles
-backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(
-  apiRestPolicy
-);
-backend.auth.resources.unauthenticatedUserIamRole.attachInlinePolicy(
-  apiRestPolicy
-);
-
 // Usage plan is needed to enable rate limiting
 const usagePlan = new UsagePlan(apiStack, "ExpenseFormUsagePlan", {
   name: `ExpenseFormUsagePlan-${branch}`,
@@ -157,10 +138,6 @@ backend.addOutput({
     },
   },
 });
-
-// Get current AWS account and region dynamically
-const region = Stack.of(restApi).region;
-const accountId = Stack.of(restApi).account;
 
 const notificationTopicArn = `arn:aws:sns:${region}:${accountId}:expense-app-limit-alerts`;
 
@@ -219,15 +196,6 @@ backend.sendExpenseFormFunction.resources.lambda.addToRolePolicy(
 backend.sendExpenseFormFunction.addEnvironment(
   "AMPLIFY_DATA_GRAPHQL_ENDPOINT",
   backend.data.graphqlUrl
-);
-
-if (!backend.data.apiKey) {
-  throw new Error("GraphQL API key is undefined during deployment");
-}
-
-backend.sendExpenseFormFunction.addEnvironment(
-  "AMPLIFY_DATA_API_KEY",
-  backend.data.apiKey
 );
 
 backend.sendExpenseFormFunction.addEnvironment(
