@@ -8,6 +8,7 @@ import { useAppSelector, useAppDispatch } from "../store";
 import { useEffect } from "react";
 import { getChurchDetails } from "../store/church-action-creators";
 import { Link } from "react-router-dom";
+import { getCurrentUser } from "aws-amplify/auth";
 
 import classes from "./Admin.module.css";
 import ModalMessage from "../Components/ModalMessage";
@@ -19,8 +20,19 @@ function Home() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
+    const fetchChurchDetails = async () => {
+      try {
+        await getCurrentUser();
+        // If user is authenticated, use userPool auth mode
+        getChurchDetails(dispatch, churchPK, "userPool");
+      } catch {
+        // If user is not authenticated, use identityPool auth mode
+        getChurchDetails(dispatch, churchPK, "identityPool");
+      }
+    };
+
     if (churchPK) {
-      getChurchDetails(dispatch, churchPK);
+      fetchChurchDetails();
     }
   }, [dispatch, churchPK]);
 
