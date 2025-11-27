@@ -2,6 +2,11 @@ import classes from "./Form.module.css";
 import { DeleteButton } from "./Buttons";
 import { useAppSelector } from "../store/index";
 import { type Dispatch, type SetStateAction, useEffect } from "react";
+import {
+  MAX_TOTAL_BYTES,
+  TARGET_TOTAL_BYTES,
+  enforceTargetTotal,
+} from "../Utils/fileCompression";
 
 type FileUploader = {
   selectedFile: File | null;
@@ -28,11 +33,6 @@ const FileUploader = ({
                                 ${fileError && classes.fileInputInvalid} 
                                 ${classes.customFileUploadButton}`;
 
-  const addFileToList = (file: File) => {
-    setFileList((prevList) => [...prevList, file]);
-    setTotalFileSize((prevSize) => prevSize + file.size);
-  };
-
   const removeFileFromList = (file: File) => {
     setFileList((prevList) => prevList.filter((f) => f !== file));
     setTotalFileSize((prevSize) => prevSize - file.size);
@@ -53,29 +53,61 @@ const FileUploader = ({
       "image/jpg",
       "application/pdf",
     ];
-    const fileSize = file.size;
     const fileType = file.type;
     if (!fileTypes.includes(fileType)) {
       setFileError("File type not supported");
       setTimeout(() => setFileError(false), 3000);
-      return false;
-    } else if (totalFileSize + fileSize > 4.5 * 1024 * 1024) {
-      setFileError("Total file size cannot exceed 4.5 MB");
-      setTimeout(() => setFileError(false), 5000);
       return false;
     }
     setFileError(false);
     return true;
   };
 
-  const handleFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      const file = event.target.files[0];
-      if (fileUploadIsValid(file)) {
-        setSelectedFile(file);
-        addFileToList(file);
-      }
+  const handleFileInput = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const incomingFiles = event.target.files;
+    if (!incomingFiles || incomingFiles.length === 0) {
+      return;
     }
+
+    const newFile = incomingFiles[0];
+    if (!fileUploadIsValid(newFile)) {
+      return;
+    }
+
+    const projectedTotal = totalFileSize + newFile.size;
+    if (projectedTotal > MAX_TOTAL_BYTES) {
+      setFileError("Uploads cannot exceed 6 MB in total.");
+      setTimeout(() => setFileError(false), 5000);
+      return;
+    }
+
+    let updatedFiles = [...fileList, newFile];
+    let updatedTotal = projectedTotal;
+
+    if (updatedTotal > TARGET_TOTAL_BYTES) {
+      setFileError("Optimizing your receipts to fit under 4.5 MB...");
+      const { files, totalSize, success } =
+        await enforceTargetTotal(updatedFiles);
+
+      if (!success) {
+        setFileError(
+          "Unable to reduce file size automatically. Please upload a smaller image."
+        );
+        setTimeout(() => setFileError(false), 6000);
+        return;
+      }
+
+      updatedFiles = files;
+      updatedTotal = totalSize;
+      setTimeout(() => setFileError(false), 2500);
+    }
+
+    setSelectedFile(updatedFiles[updatedFiles.length - 1] ?? null);
+    setFileList(updatedFiles);
+    setTotalFileSize(updatedTotal);
+    setFileError(false);
   };
 
   const handleOnClick = () => {
@@ -118,7 +150,9 @@ const FileUploader = ({
         name="receipts"
         className={classes.fileInputField}
         accept="image/png, image/jpeg, image/jpg, application/pdf"
-        onChange={handleFileInput}
+        onChange={(event) => {
+          void handleFileInput(event);
+        }}
         onClick={handleOnClick}
       />
       <div
