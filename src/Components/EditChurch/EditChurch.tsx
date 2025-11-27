@@ -43,10 +43,6 @@ const EditChurch = () => {
 
   // State for which field is currently being edited
   const [editingField, setEditingField] = useState<EditingField>("none");
-  // const [newPurposeName, setNewPurposeName] = useState("");
-  // const [editingPurposeIndex, setEditingPurposeIndex] = useState<number | null>(
-  //   null
-  // );
 
   // Fetch current church data on component mount
   useEffect(() => {
@@ -242,6 +238,7 @@ const EditChurch = () => {
             <CostPurposeForm cancelEditing={cancelEditing} newRecord={true} />
           ) : (
             <>
+              <br />
               <EditButton
                 type="button"
                 onClick={() => startEditing("newCostPurpose")}
