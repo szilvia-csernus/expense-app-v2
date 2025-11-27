@@ -10,18 +10,8 @@ export default defineConfig({
       strategies: "generateSW",
       registerType: "autoUpdate",
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
-      // includeAssets: [
-      //   "favicon-32x32.png",
-      //   "icon-144x144.png",
-      //   "icon-36x36.png",
-      //   "icon-48x48.png",
-      //   "icon-96x96.png",
-      //   "icon-192x192.png",
-      //   "icon-512x512.png",
-      //   "icon-square-180x180.png",
-      // ],
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp}"],
         skipWaiting: true,
@@ -68,7 +58,7 @@ export default defineConfig({
             options: {
               cacheName: "aws-logo-cache",
               expiration: {
-                maxEntries: 50,
+                maxEntries: 2,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
               cacheableResponse: {
