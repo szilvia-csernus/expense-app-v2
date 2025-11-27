@@ -478,7 +478,7 @@ const CostForm = () => {
               <p className={classes.labelSubText}>
                 Please take/upload a clear picture or PDF of the receipt of the
                 expense made. Accepted file types: png, jpg, jpeg, pdf. Max
-                upload: 4MB.
+                upload: 4.5MB.
               </p>
 
               <div ref={fileSectionRef}>

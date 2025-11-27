@@ -59,8 +59,8 @@ const FileUploader = ({
       setFileError("File type not supported");
       setTimeout(() => setFileError(false), 3000);
       return false;
-    } else if (totalFileSize + fileSize > 4 * 1024 * 1024) {
-      setFileError("Total file size cannot exceed 4 MB");
+    } else if (totalFileSize + fileSize > 4.5 * 1024 * 1024) {
+      setFileError("Total file size cannot exceed 4.5 MB");
       setTimeout(() => setFileError(false), 5000);
       return false;
     }

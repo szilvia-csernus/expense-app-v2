@@ -32,10 +32,10 @@ export function validateForm(
     return false;
   }
 
-  // Check if receipts total file size is not greater than 4MB
+  // Check if receipts total file size is not greater than 5MB
   const totalSize = receipts.reduce((acc, file) => acc + file.buffer.length, 0);
-  if (totalSize > 4 * 1024 * 1024) {
-    console.error("Total receipt file size exceeds 4MB");
+  if (totalSize > 4.5 * 1024 * 1024) {
+    console.error("Total receipt file size exceeds 4.5MB");
     return false;
   }
 
