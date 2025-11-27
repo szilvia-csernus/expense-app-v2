@@ -6,83 +6,81 @@ import type { AppDispatch } from ".";
 import { modalMessageActions } from "./modal-message-slice";
 import { callAfterTimeout } from "../Utils/timeout";
 
-export const getChurchDetails = (dispatch: Dispatch, churchPK: string) => {
+export const getChurchDetails = (
+  dispatch: Dispatch,
+  churchPK: string,
+  authMode: "identityPool" | "userPool"
+) => {
   dispatch(churchActions.setFetchingDetailsInProcess(true));
   const fetchData = async () => {
-    const expenseAppClient = generateClient<Schema>({ authMode: "apiKey" })
-      .models.ExpenseApp;
-    // find church details in the database
-    const responseProfile = await expenseAppClient.list({
-      filter: { PK: { eq: churchPK }, SK: { eq: "PROFILE" } },
-      selectionSet: ["logo", "churchShortName"],
-    });
+    const expenseAppClient = generateClient<Schema>({
+      authMode: authMode, // Ensure guest access
+    }).models.ExpenseApp;
 
-    console.log("church profile response:", responseProfile);
-    const churchFound = responseProfile.data[0];
+    try {
+      // find church details in the database
+      const responseProfile = await expenseAppClient.list({
+        filter: { PK: { eq: churchPK }, SK: { eq: "PROFILE" } },
+        selectionSet: ["logo", "churchShortName"],
+      });
 
-    if (responseProfile.errors || !churchFound) {
-      console.error("Error fetching church details:", responseProfile.errors);
-      return;
-    } else {
-      dispatch(churchActions.setFetchingDetailsInProcess(false));
-    }
+      console.log("church profile response:", responseProfile);
+      const churchFound = responseProfile.data[0];
 
-    const logo = churchFound.logo
-      ? churchFound.logo
-      : "https://res.cloudinary.com/dgp5kmp7u/image/upload/v1707902919/media/logos/logo-placeholder.png";
+      if (responseProfile.errors || !churchFound) {
+        console.error("Error fetching church details:", responseProfile.errors);
+        dispatch(
+          modalMessageActions.setMessage({
+            title: "ERROR",
+            message:
+              "There was an error fetching church details. If the issue persists, contact the site administrator.",
+          })
+        );
+        dispatch(modalMessageActions.open());
+        return;
+      } else {
+        dispatch(churchActions.setFetchingDetailsInProcess(false));
+      }
 
-    const churchShortName = churchFound.churchShortName || "";
+      const logo = churchFound.logo
+        ? churchFound.logo
+        : "https://res.cloudinary.com/dgp5kmp7u/image/upload/v1707902919/media/logos/logo-placeholder.png";
 
-    const responseCostPurposes = await expenseAppClient.list({
-      filter: { PK: { eq: churchPK }, SK: { beginsWith: "COSTPURPOSE#" } },
-      selectionSet: ["costPurposeName", "costCode", "SK"],
-    });
+      const churchShortName = churchFound.churchShortName || "";
 
-    if (responseCostPurposes.errors) {
-      console.error(
-        "Error fetching cost purposes:",
-        responseCostPurposes.errors
+      const responseCostPurposes = await expenseAppClient.list({
+        filter: { PK: { eq: churchPK }, SK: { beginsWith: "COSTPURPOSE#" } },
+        selectionSet: ["costPurposeName", "costCode", "SK"],
+      });
+
+      if (responseCostPurposes.errors) {
+        console.error(
+          "Error fetching cost purposes:",
+          responseCostPurposes.errors
+        );
+        return;
+      }
+
+      const costPurposes = responseCostPurposes.data;
+
+      dispatch(
+        churchActions.setChurchDetails({ logo, churchShortName, costPurposes })
       );
-      return;
+    } catch (error) {
+      console.error("Error in getChurchDetails:", error);
+      dispatch(
+        modalMessageActions.setMessage({
+          title: "ERROR",
+          message: "Failed to fetch church details. Please try again later.",
+        })
+      );
+      dispatch(modalMessageActions.open());
     }
-
-    const costPurposes = responseCostPurposes.data;
-
-    dispatch(
-      churchActions.setChurchDetails({ logo, churchShortName, costPurposes })
-    );
-    // Pre-fetch and cache the logo image before the form gets rendered. While
-    // fetchingInProcess is true, the loader is active on the form.
-    // const img = new Image();
-    // img.src = logo;
-    // img.onload = () => {
-    //   dispatch(churchActions.setFetchingDetailsInProcess(false));
-    // };
-    // const response = await fetch(
-    // 	`/api/churches/details/?church=${church}`
-    // );
-    // const data = await response.json();
-    // const cost_purposes = data.cost_purposes;
-    // const churchLogo = data.logo;
-    // if (response.errors || !churchFound) {
-    // 	console.error('Error fetching church details:', response.errors);
-    //     dispatch(churchActions.resetChurch())
-    // } else {
-    // 	const logo = churchFound.logo
-    // 		? churchFound.logo
-    // 		: 'https://res.cloudinary.com/dgp5kmp7u/image/upload/v1707902919/media/logos/logo-placeholder.png';
-    // 	dispatch(churchActions.setChurchDetails({ logo, costPurposes }));
-    // 	// Pre-fetch and cache the logo image before the form gets rendered. While
-    // 	// fetchingInProcess is true, the loader is active on the form.
-    // 	const img = new Image();
-    // 	img.src = logo;
-    // 	img.onload = () => {
-    // 		dispatch(churchActions.setFetchingDetailsInProcess(false));
-    // 	};
-    // }
   };
   return fetchData();
 };
+
+// Admin functions
 
 export const getChurchDetailsForAdmin = (
   dispatch: Dispatch,
@@ -90,7 +88,8 @@ export const getChurchDetailsForAdmin = (
 ) => {
   dispatch(churchActions.setFetchingDetailsInProcess(true));
   const fetchData = async () => {
-    const expenseAppClient = generateClient<Schema>().models.ExpenseApp;
+    const expenseAppClient = generateClient<Schema>({ authMode: "userPool" })
+      .models.ExpenseApp;
     // find church details in the database
     const responseProfile = await expenseAppClient.list({
       filter: { PK: { eq: churchPK }, SK: { eq: "PROFILE" } },
@@ -150,13 +149,6 @@ export const getChurchDetailsForAdmin = (
         costPurposes,
       })
     );
-    // Pre-fetch and cache the logo image before the form gets rendered. While
-    // fetchingInProcess is true, the loader is active on the form.
-    // const img = new Image();
-    // img.src = logo;
-    // img.onload = () => {
-    //   dispatch(churchActions.setFetchingDetailsInProcess(false));
-    // };
   };
   return fetchData();
 };
@@ -168,7 +160,7 @@ export const updateChurchData = async (
   fieldValue: string
 ) => {
   try {
-    const client = generateClient<Schema>();
+    const client = generateClient<Schema>({ authMode: "userPool" });
     const response = await client.models.ExpenseApp.update(
       {
         PK: churchPK,
@@ -226,7 +218,7 @@ export const deleteCostPurpose = async (
   costPurposeSK: string
 ) => {
   try {
-    const client = generateClient<Schema>();
+    const client = generateClient<Schema>({ authMode: "userPool" });
     const response = await client.models.ExpenseApp.delete(
       {
         PK: churchPK,
@@ -286,7 +278,7 @@ export const updateCostPurpose = async (
   costCode?: number
 ) => {
   try {
-    const client = generateClient<Schema>();
+    const client = generateClient<Schema>({ authMode: "userPool" });
     const costCodeValue = costCode && costCode !== 0 ? costCode : null; // Convert 0 to null
     const response = await client.models.ExpenseApp.update(
       {
@@ -350,7 +342,7 @@ export const addCostPurpose = async (
   costCode?: number
 ) => {
   try {
-    const client = generateClient<Schema>();
+    const client = generateClient<Schema>({ authMode: "userPool" });
     const costCodeValue = costCode !== 0 ? costCode : null;
     const response = await client.models.ExpenseApp.create(
       {
