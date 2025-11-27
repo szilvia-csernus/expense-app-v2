@@ -1,9 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { Amplify } from "aws-amplify";
-import outputs from "../../amplify_outputs.json";
 import { calculateGreatestSK } from "../Utils/calculateGreatestSK";
-
-Amplify.configure(outputs);
 
 const churchSlice = createSlice({
   name: "church",
