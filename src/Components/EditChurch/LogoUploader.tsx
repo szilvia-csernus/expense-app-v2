@@ -67,11 +67,13 @@ const LogoUploader = ({ cancelEditing }: Props) => {
       {!confirming && (
         <>
           <p className={classes.labelText}>
+            Accepted file types: PNG, JPEG, JPG.
+            <br />
             Please keep the logo file size as small as possible
             <br /> (max 200KB).
           </p>
           <FileUploader
-            acceptedFileTypes={["image/*"]}
+            acceptedFileTypes={["image/png", "image/jpeg", "image/jpg"]}
             path="logos/"
             maxFileCount={1}
             maxFileSize={200 * 1024} // 200 KB
