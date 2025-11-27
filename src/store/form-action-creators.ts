@@ -110,12 +110,12 @@ export const send = async (
     const totalSizeMB = totalFileSize / (1024 * 1024);
     console.log(`Total file size: ${totalSizeMB.toFixed(2)}MB`);
 
-    if (totalSizeMB > 4) {
-      // REST API has ~10MB limit
+    if (totalSizeMB > 4.5) {
+      // Lambda has a 6MB limit for synchronous invocations
       handleError(
         dispatch,
         "FILES TOO LARGE",
-        "Images too large. Please reduce total size to under 4MB."
+        "Images too large. Please reduce total size to under 4.5MB."
       );
       return;
     }
