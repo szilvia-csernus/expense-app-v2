@@ -13,10 +13,15 @@ export async function processAndResizeImage(
 
     console.log(`Processing image with content type: ${contentType}`);
 
+    const lowerContentType = contentType.toLowerCase();
+
     // Detect and embed image format based on content type
-    if (contentType.includes("png")) {
+    if (lowerContentType.includes("png")) {
       img = await pdfDoc.embedPng(imageBuffer);
-    } else if (contentType.includes("jpeg") || contentType.includes("jpg")) {
+    } else if (
+      lowerContentType.includes("jpeg") ||
+      lowerContentType.includes("jpg")
+    ) {
       img = await pdfDoc.embedJpg(imageBuffer);
     } else {
       // Try JPG first, then PNG as fallback
