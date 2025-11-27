@@ -3,6 +3,9 @@ import type { ExpenseFormData, Church, ReceiptBuffer } from "./types";
 import { PDFDocument, StandardFonts, PDFPage, rgb } from "pdf-lib";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 
+const isSignature = (data: Uint8Array, signature: number[], offset = 0) =>
+  signature.every((value, index) => data[index + offset] === value);
+
 async function downloadAndEmbedLogo(pdfDoc: PDFDocument, logoPath: string) {
   try {
     const s3Client = new S3Client({});
@@ -14,14 +17,61 @@ async function downloadAndEmbedLogo(pdfDoc: PDFDocument, logoPath: string) {
     const response = await s3Client.send(command);
     const logoBuffer = await response.Body!.transformToByteArray();
 
-    // Try to embed as PNG first, then JPG
+    const inferredContentType = response.ContentType || "unknown";
+
+    const looksLikePng =
+      isSignature(
+        logoBuffer,
+        [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+      ) ||
+      inferredContentType.includes("png") ||
+      logoPath.toLowerCase().endsWith(".png");
+
+    const looksLikeJpg =
+      isSignature(logoBuffer, [0xff, 0xd8, 0xff]) ||
+      inferredContentType.includes("jpeg") ||
+      inferredContentType.includes("jpg") ||
+      logoPath.toLowerCase().match(/\.jpe?g$/);
+
+    const looksLikeWebp =
+      (logoBuffer.length >= 12 &&
+        isSignature(logoBuffer, [0x52, 0x49, 0x46, 0x46]) &&
+        isSignature(logoBuffer, [0x57, 0x45, 0x42, 0x50], 8)) ||
+      inferredContentType.includes("webp") ||
+      logoPath.toLowerCase().endsWith(".webp");
+
+    if (looksLikeWebp) {
+      console.warn(
+        "Unsupported logo format (webp). Please upload PNG or JPEG instead.",
+        { key: logoPath }
+      );
+      return null;
+    }
+
+    if (looksLikePng) {
+      try {
+        return await pdfDoc.embedPng(logoBuffer);
+      } catch (pngError) {
+        console.warn("PNG embed failed, falling back to JPEG", pngError);
+      }
+    }
+
+    if (looksLikeJpg) {
+      try {
+        return await pdfDoc.embedJpg(logoBuffer);
+      } catch (jpgError) {
+        console.warn("JPEG embed failed", jpgError);
+      }
+    }
+
+    // Last resort: try both to bubble up original errors
     try {
       return await pdfDoc.embedPng(logoBuffer);
     } catch {
       return await pdfDoc.embedJpg(logoBuffer);
     }
   } catch (error) {
-    console.warn("Error downloading logo:", error);
+    console.warn("Error embedding logo into PDF:", error);
     return null;
   }
 }
