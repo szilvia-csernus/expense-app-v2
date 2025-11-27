@@ -1,34 +1,10 @@
 import { modalMessageActions } from "./modal-message-slice";
 import { formActions } from "./form-slice";
 import { callAfterTimeout } from "../Utils/timeout";
-import { Amplify } from "aws-amplify";
-import { parseAmplifyConfig } from "aws-amplify/utils";
-import outputs from "../../amplify_outputs.json";
 import { post } from "aws-amplify/api";
 import type { AppDispatch } from ".";
 
-const amplifyConfig = parseAmplifyConfig(outputs);
-const apiName = Object.keys(outputs.custom.API)[0];
-console.log("Using API Name:", apiName);
-
-Amplify.configure(
-  {
-    ...amplifyConfig,
-    API: {
-      ...amplifyConfig.API,
-      REST: outputs.custom.API,
-    },
-  },
-  {
-    API: {
-      REST: {
-        retryStrategy: {
-          strategy: "no-retry", // Overrides default retry strategy
-        },
-      },
-    },
-  }
-);
+import { apiName } from "../configureAmplify";
 
 console.log("All env vars:", import.meta.env);
 
