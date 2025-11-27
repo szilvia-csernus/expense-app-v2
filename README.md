@@ -56,6 +56,6 @@ As per the requirement of the Rotterdam Finance Team, the app does not retain an
 
 Any feedback or inquiries, please reach out!
 
-Send your message to [this email](mailto:benches.dory_0b@icloud.com)!
+Send your message to [this email](mailto:benches.dory_0b@icloud.com).
 
-Thank you!
+Thank you.
