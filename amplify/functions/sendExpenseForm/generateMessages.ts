@@ -45,8 +45,8 @@ export function generateReplyTemplate(
 ): string {
   return `Dear ${submitter},<br><br>
 
-Thank you for using your resources for the church.<br>
-I have transferred the reimbursement to your account. If you have any questions, then please reach out to us at ${church.financeEmail}.<br><br>
+Thanks for covering the church expenses! <br>
+I've sent the reimbursement to your account. If you have any questions, feel free to email us at ${church.financeEmail}.<br><br>
 
 ${church.financeContactName}<br>
 Finance Team<br>
