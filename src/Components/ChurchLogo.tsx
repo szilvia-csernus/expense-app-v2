@@ -1,21 +1,26 @@
 import classes from "./Form.module.css";
-
 import { useAppSelector } from "../store";
 import { StorageImage } from "@aws-amplify/ui-react-storage";
 
 const ChurchLogo = () => {
-  const churchLogo = useAppSelector((state) => state.church.logo);
+  const churchLogoPath = useAppSelector((state) => state.church.logo);
+  const isFetching = useAppSelector(
+    (state) => state.church.fetchingDetailsInProcess
+  );
 
   return (
-    <StorageImage
-      path={churchLogo || "logos/Image_not_available.webp"}
-      className={classes.churchLogo}
-      alt="church logo"
-      style={{ height: "60px", width: "auto" }}
-      loading="eager"
-      width={202} // explicit width and height for aspect ratio to satisfy LightHouse
-      height={60}
-    />
+    <div style={{ height: "60px", display: "block" }}>
+      {churchLogoPath && !isFetching && (
+        <StorageImage
+          path={churchLogoPath}
+          className={classes.churchLogo}
+          alt="church logo"
+          loading="eager"
+          width={202}
+          height={60}
+        />
+      )}
+    </div>
   );
 };
 
