@@ -16,7 +16,6 @@ import { sendEmails } from "./sendEmails";
 import { validateForm } from "./validateForm";
 import { getChurchDetailsAndUpdateCounter } from "./getChurchDetailsAndUpdateCounter";
 import { checkMonthlyLimit } from "./checkMonthlyLimit";
-import { checkRateLimit } from "./checkIPRateLimit";
 import { parseMultipart } from "./parseMultipart";
 
 let configureAmplifyPromise: Promise<void> | undefined;
@@ -99,16 +98,6 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         body: JSON.stringify({ error: "Forbidden - Invalid origin" }),
       };
     }
-  }
-
-  // Rate limiting
-  const clientIP = event.requestContext.identity.sourceIp || "unknown";
-  if (!checkRateLimit(clientIP)) {
-    return {
-      statusCode: 429,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: "Rate limit exceeded" }),
-    };
   }
 
   // Monthly limit
