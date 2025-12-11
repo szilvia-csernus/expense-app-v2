@@ -39,7 +39,7 @@ As per the requirement of the Rotterdam Finance Team, the app does not retain an
 - AWS Cognito
 - AWS S3
 - AWS DynamoDB
-- Other AWS services, such as IAM, ClouWatch, System Manager Parameter Store etc.
+- Other AWS services, such as IAM, CloudWatch, System Manager Parameter Store etc.
 - ReactJS
 - Vite
 - CSS Modules
