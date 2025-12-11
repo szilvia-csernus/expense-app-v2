@@ -9,8 +9,6 @@ import {
   Cors,
   LambdaIntegration,
   RestApi,
-  Period,
-  UsagePlan,
   GatewayResponse,
   ResponseType,
   AuthorizationType,
@@ -104,26 +102,6 @@ submitExpenseResource.addMethod("POST", lambdaIntegration, {
 submitExpenseResource.addProxy({
   anyMethod: true,
   defaultIntegration: lambdaIntegration,
-});
-
-// Usage plan is needed to enable rate limiting
-const usagePlan = new UsagePlan(apiStack, "ExpenseFormUsagePlan", {
-  name: `ExpenseFormUsagePlan-${branch}`,
-  description: `Usage plan for expense form API - ${branch}`,
-  throttle: {
-    rateLimit: 1, // 1 request per second
-    burstLimit: 2, // 2 concurrent requests max
-  },
-  quota: {
-    limit: 100, // 100 requests per month
-    period: Period.MONTH,
-  },
-});
-
-// Associate the usage plan with the API stage
-usagePlan.addApiStage({
-  api: restApi,
-  stage: restApi.deploymentStage,
 });
 
 // Output API endpoint for frontend
