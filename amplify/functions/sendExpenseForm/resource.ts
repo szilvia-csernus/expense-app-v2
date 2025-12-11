@@ -12,4 +12,7 @@ export const sendExpenseFormFunction = defineFunction({
   },
   runtime: 22, // Use Node.js 22 runtime
   resourceGroupName: "data", // assign to the data stack to avoid circular dependencies
+  logging: {
+    retention: "2 weeks",
+  },
 });
