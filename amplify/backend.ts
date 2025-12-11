@@ -5,6 +5,7 @@ import { storage } from "./storage/resource";
 import { sendExpenseFormFunction } from "./functions/sendExpenseForm/resource";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { Stack } from "aws-cdk-lib";
+import { CfnUserPool } from "aws-cdk-lib/aws-cognito";
 import {
   Cors,
   LambdaIntegration,
@@ -31,6 +32,11 @@ const apiStack = Stack.of(backend.sendExpenseFormFunction.resources.lambda);
 const appId = process.env.AWS_APP_ID;
 const branch = process.env.AWS_BRANCH || "dev";
 const env = process.env.ENV || "dev";
+
+// Customize User Pool name
+const cfnUserPool = backend.auth.resources.userPool.node.defaultChild as CfnUserPool;
+cfnUserPool.userPoolName = `expense-app-userpool-${branch}`;
+
 // Get current AWS account and region dynamically
 const region = Stack.of(apiStack).region;
 const accountId = Stack.of(apiStack).account;
