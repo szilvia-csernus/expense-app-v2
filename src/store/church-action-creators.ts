@@ -44,7 +44,7 @@ export const getChurchDetails = (
 
       const logo = churchFound.logo
         ? churchFound.logo
-        : "https://res.cloudinary.com/dgp5kmp7u/image/upload/v1707902919/media/logos/logo-placeholder.png";
+        : "logos/Image_not_available.webp";
 
       const churchShortName = churchFound.churchShortName || "";
 
@@ -115,7 +115,7 @@ export const getChurchDetailsForAdmin = (
 
     const logo = churchFound.logo
       ? churchFound.logo
-      : "https://res.cloudinary.com/dgp5kmp7u/image/upload/v1707902919/media/logos/logo-placeholder.png";
+      : "logos/Image_not_available.webp";
 
     const churchShortName = churchFound.churchShortName || "";
     const churchLongName = churchFound.churchLongName || "";
