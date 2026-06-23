@@ -12,13 +12,22 @@ async function loadGmailCredentials() {
     const [clientIdResult, clientSecretResult, refreshTokenResult] =
       await Promise.all([
         ssmClient.send(
-          new GetParameterCommand({ Name: process.env.GMAIL_CLIENT_ID })
+          new GetParameterCommand({
+            Name: process.env.GMAIL_CLIENT_ID,
+            WithDecryption: true,
+          }),
         ),
         ssmClient.send(
-          new GetParameterCommand({ Name: process.env.GMAIL_CLIENT_SECRET })
+          new GetParameterCommand({
+            Name: process.env.GMAIL_CLIENT_SECRET,
+            WithDecryption: true,
+          }),
         ),
         ssmClient.send(
-          new GetParameterCommand({ Name: process.env.GMAIL_REFRESH_TOKEN })
+          new GetParameterCommand({
+            Name: process.env.GMAIL_REFRESH_TOKEN,
+            WithDecryption: true,
+          }),
         ),
       ]);
 
@@ -28,7 +37,7 @@ async function loadGmailCredentials() {
       !refreshTokenResult.Parameter?.Value
     ) {
       throw new Error(
-        "One or more Gmail credentials are missing from Parameter Store"
+        "One or more Gmail credentials are missing from Parameter Store",
       );
     }
 
@@ -43,7 +52,7 @@ async function loadGmailCredentials() {
   } catch (error) {
     console.error(
       "Error loading Gmail credentials from Parameter Store:",
-      error
+      error,
     );
     throw new Error("Failed to load Gmail credentials");
   }
@@ -60,13 +69,13 @@ async function sendEmail(
   subject: string,
   body: string,
   attachment: EmailAttachment | null,
-  replyTo: string
+  replyTo: string,
 ) {
   // Set up OAuth2 client
   const oAuth2Client = new auth.OAuth2(
     credentials.client_id,
     credentials.client_secret,
-    "http://localhost" // redirect URI
+    "http://localhost", // redirect URI
   );
   oAuth2Client.setCredentials({ refresh_token: credentials.refresh_token });
 
@@ -92,11 +101,11 @@ async function sendEmail(
     messageParts.push("");
     messageParts.push(`--${boundary}`);
     messageParts.push(
-      `Content-Type: ${attachment.contentType}; name="${attachment.filename}"`
+      `Content-Type: ${attachment.contentType}; name="${attachment.filename}"`,
     );
     messageParts.push("Content-Transfer-Encoding: base64");
     messageParts.push(
-      `Content-Disposition: attachment; filename="${attachment.filename}"`
+      `Content-Disposition: attachment; filename="${attachment.filename}"`,
     );
     messageParts.push("");
     messageParts.push(attachment.content);
@@ -133,7 +142,7 @@ export async function sendEmails(
   messageToSubmitter: string,
   messageToFinance: string,
   messageTemplate: string,
-  pdfBuffer: Buffer
+  pdfBuffer: Buffer,
 ) {
   // Load credentials from Parameter Store
   const credentials = await loadGmailCredentials();
@@ -147,7 +156,7 @@ export async function sendEmails(
       `Expense Form ${churchData.claimsCounter} ${formData.description} ${formData.purpose}`,
       messageToSubmitter,
       null,
-      churchData.financeEmail
+      churchData.financeEmail,
     );
 
     // Email to finance team
@@ -162,7 +171,7 @@ export async function sendEmails(
         content: pdfBuffer.toString("base64"),
         contentType: "application/pdf",
       },
-      formData.email
+      formData.email,
     );
 
     // Email template back to finance team
@@ -173,7 +182,7 @@ export async function sendEmails(
       `Expense Form ${churchData.claimsCounter} ${formData.description} ${formData.purpose}`,
       messageTemplate,
       null,
-      formData.email
+      formData.email,
     );
 
     console.log(`Email sent for expense form ${churchData.claimsCounter}`);
