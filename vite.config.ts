@@ -95,18 +95,12 @@ export default defineConfig({
             handler: "NetworkOnly", // Auth requests should not be cached
           },
           {
+            // Turnstile tokens are single-use and short-lived; replaying a
+            // queued request hours later will always fail verification.
             urlPattern: ({ url }: { url: URL }) =>
               url.pathname.endsWith("/submit-expense"),
             handler: "NetworkOnly",
             method: "POST",
-            options: {
-              backgroundSync: {
-                name: "sendExpenseFormQueue",
-                options: {
-                  maxRetentionTime: 60 * 24 * 2, // 2 days
-                },
-              },
-            },
           },
         ],
       },

@@ -6,8 +6,6 @@ import type { AppDispatch } from ".";
 
 import { apiName } from "../configureAmplify";
 
-console.log("All env vars:", import.meta.env);
-
 /** Error handler. Stop sending the form and show error message. */
 const handleError = (dispatch: AppDispatch, title: string, message: string) => {
   dispatch(formActions.resetSending());
@@ -28,20 +26,6 @@ export const noNetworkError = (dispatch: AppDispatch) => {
     "YOU'RE OFFLINE",
     `It seems you have no network connection. Please try resubmitting 
         your form when your network recovers.`
-  );
-};
-
-/** Warning message when there is no network, but we'll try sending the form
- * in the backcground. */
-export const sendFormLaterError = (dispatch: AppDispatch) => {
-  handleError(
-    dispatch,
-    "ERROR",
-    `It seems you have no network connection. We 
-        will attempt to resend your form in the next 48 hours 
-        if your network recovers during this time. However, 
-        if you don't receive a confirmation email within this period, 
-        please try resubmitting your form.`
   );
 };
 
@@ -202,11 +186,6 @@ export const send = async (
     }
   } catch (error) {
     console.error("Error sending form:", error);
-    if ("serviceWorker" in navigator && "SyncManager" in window) {
-      sendFormLaterError(dispatch);
-      resetForm();
-    } else {
-      noNetworkError(dispatch);
-    }
+    noNetworkError(dispatch);
   }
 };
