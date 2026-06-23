@@ -34,8 +34,10 @@ const branch = process.env.AWS_BRANCH || "dev";
 const env = process.env.ENV || "dev";
 
 // Customize User Pool name
-const cfnUserPool = backend.auth.resources.userPool.node.defaultChild as CfnUserPool;
+const cfnUserPool = backend.auth.resources.userPool.node
+  .defaultChild as CfnUserPool;
 cfnUserPool.userPoolName = `expense-app-userpool-${branch}`;
+cfnUserPool.adminCreateUserConfig = { allowAdminCreateUserOnly: true };
 
 // Get current AWS account and region dynamically
 const region = Stack.of(apiStack).region;
@@ -78,7 +80,7 @@ const lambdaIntegration = new LambdaIntegration(
   {
     contentHandling: ContentHandling.CONVERT_TO_TEXT, // Important for binary data
     passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
-  }
+  },
 );
 
 // create a new resource path with IAM authorization
@@ -128,7 +130,7 @@ const notificationTopicArn = `arn:aws:sns:${region}:${accountId}:expense-app-lim
 // Add environment variable for the topic ARN
 backend.sendExpenseFormFunction.addEnvironment(
   "NOTIFICATION_TOPIC_ARN",
-  notificationTopicArn
+  notificationTopicArn,
 );
 
 // Add SNS permissions to your Lambda function
@@ -136,7 +138,7 @@ backend.sendExpenseFormFunction.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     actions: ["sns:Publish"],
     resources: [notificationTopicArn],
-  })
+  }),
 );
 
 // Update your existing SSM permissions to include the request-count parameter
@@ -151,7 +153,7 @@ backend.sendExpenseFormFunction.resources.lambda.addToRolePolicy(
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/notification-email`,
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/turnstile/secret-key`,
     ],
-  })
+  }),
 );
 
 // Grant S3 access to the Lambda explicitly (function -> storage only)
@@ -167,49 +169,49 @@ backend.sendExpenseFormFunction.resources.lambda.addToRolePolicy(
       backend.storage.resources.bucket.bucketArn,
       `${backend.storage.resources.bucket.bucketArn}/*`,
     ],
-  })
+  }),
 );
 
 backend.sendExpenseFormFunction.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     actions: ["appsync:GraphQL"],
     resources: [backend.data.resources.graphqlApi.arn + "/*"],
-  })
+  }),
 );
 
 // Add environment variables for the GraphQL endpoint
 backend.sendExpenseFormFunction.addEnvironment(
   "AMPLIFY_DATA_GRAPHQL_ENDPOINT",
-  backend.data.graphqlUrl
+  backend.data.graphqlUrl,
 );
 
 backend.sendExpenseFormFunction.addEnvironment(
   "AMPLIFY_DATA_DEFAULT_NAME",
-  branch || "dev"
+  branch || "dev",
 );
 
 // Add environment variables for the Lambda function
 backend.sendExpenseFormFunction.addEnvironment(
   "STORAGE_BUCKET_NAME",
-  backend.storage.resources.bucket.bucketName
+  backend.storage.resources.bucket.bucketName,
 );
 
 // Set environment variables to Parameter Store paths (not the actual values)
 backend.sendExpenseFormFunction.addEnvironment(
   "GMAIL_CLIENT_ID",
-  "/expense-app/gmail/client-id"
+  "/expense-app/gmail/client-id",
 );
 backend.sendExpenseFormFunction.addEnvironment(
   "GMAIL_CLIENT_SECRET",
-  "/expense-app/gmail/client-secret"
+  "/expense-app/gmail/client-secret",
 );
 backend.sendExpenseFormFunction.addEnvironment(
   "GMAIL_REFRESH_TOKEN",
-  "/expense-app/gmail/refresh-token"
+  "/expense-app/gmail/refresh-token",
 );
 backend.sendExpenseFormFunction.addEnvironment(
   "TURNSTILE_SECRET_KEY",
-  "/expense-app/turnstile/secret-key"
+  "/expense-app/turnstile/secret-key",
 );
 backend.sendExpenseFormFunction.addEnvironment("AWS_APP_ID", appId || "");
 backend.sendExpenseFormFunction.addEnvironment("AWS_BRANCH", branch || "dev");
