@@ -1,5 +1,6 @@
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import { ReceiptBuffer } from "./types";
+import { detectMimeType } from "./detectFileType";
 
 export async function parseMultipart(
   event: APIGatewayProxyEvent
@@ -46,9 +47,10 @@ export async function parseMultipart(
       fields[key] = value;
     } else {
       const ab = await value.arrayBuffer();
+      const buf = Buffer.from(ab);
       receipts.push({
-        buffer: Buffer.from(ab),
-        mimetype: value.type,
+        buffer: buf,
+        mimetype: detectMimeType(buf) ?? "",
         filename: value.name,
       });
     }
