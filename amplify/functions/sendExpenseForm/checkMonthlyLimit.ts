@@ -35,9 +35,10 @@ export async function checkMonthlyLimit(): Promise<boolean> {
       alreadyNotified = data.notified || false;
       warningNotified = data.warningNotified || false;
     } catch (error) {
-      if (error instanceof Error) {
-        // Parameter doesn't exist yet, start fresh
+      if (error instanceof Error && error.name === "ParameterNotFound") {
         console.log("Creating new request counter");
+      } else {
+        throw error;
       }
     }
 
@@ -105,7 +106,7 @@ export async function checkMonthlyLimit(): Promise<boolean> {
     return true; // Allow request
   } catch (error) {
     console.error("Error checking monthly limit:", error);
-    return true; // Allow on error to avoid breaking legitimate requests
+    return false; // Fail closed — SSM unavailable means the cap cannot be verified
   }
 }
 
