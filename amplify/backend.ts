@@ -216,12 +216,13 @@ backend.sendExpenseFormFunction.addEnvironment(
 backend.sendExpenseFormFunction.addEnvironment("AWS_APP_ID", appId || "");
 backend.sendExpenseFormFunction.addEnvironment("AWS_BRANCH", branch || "dev");
 
-// CORS on default API Gateway error responses
+// CORS on default API Gateway error responses — use the same primary origin as the main preflight config
+const primaryOrigin = `'${ORIGINS[0]}'`;
 new GatewayResponse(apiStack, "Default4xxWithCors", {
   restApi,
   type: ResponseType.DEFAULT_4XX,
   responseHeaders: {
-    "Access-Control-Allow-Origin": "'*'",
+    "Access-Control-Allow-Origin": primaryOrigin,
     "Access-Control-Allow-Headers": "'Content-Type'",
     "Access-Control-Allow-Methods": "'OPTIONS,POST'",
   },
@@ -230,7 +231,7 @@ new GatewayResponse(apiStack, "Default5xxWithCors", {
   restApi,
   type: ResponseType.DEFAULT_5XX,
   responseHeaders: {
-    "Access-Control-Allow-Origin": "'*'",
+    "Access-Control-Allow-Origin": primaryOrigin,
     "Access-Control-Allow-Headers": "'Content-Type'",
     "Access-Control-Allow-Methods": "'OPTIONS,POST'",
   },
