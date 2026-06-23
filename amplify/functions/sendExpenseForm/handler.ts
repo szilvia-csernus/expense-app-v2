@@ -69,7 +69,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
   console.log(
     "AMPLIFY_DATA_GRAPHQL_ENDPOINT:",
-    process.env.AMPLIFY_DATA_GRAPHQL_ENDPOINT || "missing"
+    process.env.AMPLIFY_DATA_GRAPHQL_ENDPOINT || "missing",
   );
   console.log("AWS_REGION:", process.env.AWS_REGION || "missing");
 
@@ -91,7 +91,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
     if (!hasValidOrigin && !hasValidReferer) {
       console.log(
-        `Blocked request from invalid origin: ${origin}, referer: ${referer}`
+        `Blocked request from invalid origin: ${origin}, referer: ${referer}`,
       );
       return {
         statusCode: 403,
@@ -161,13 +161,13 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     const mainMessage = generateMainMessage(formData);
     const messageToSubmitter = generateMessageToSubmitter(
       churchData,
-      formData.name
+      formData.name,
     );
     const messageToFinance = generateMessageToFinance(mainMessage);
     const messageTemplate = generateReplyTemplate(
       churchData,
       formData.name,
-      mainMessage
+      mainMessage,
     );
 
     // Generate PDF attachment
@@ -175,7 +175,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       formData,
       receipts,
       churchData,
-      churchData.claimsCounter || 1
+      churchData.claimsCounter || 1,
     );
     if (!pdfBuffer) {
       return {
@@ -191,7 +191,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       messageToSubmitter,
       messageToFinance,
       messageTemplate,
-      pdfBuffer
+      pdfBuffer,
     );
     return {
       statusCode: 200,
@@ -206,10 +206,6 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     };
   } catch (error: unknown) {
     console.error("Error processing form:", error);
-    let errorMessage = "An unknown error occurred";
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
     return {
       statusCode: 500,
       headers: {
@@ -218,7 +214,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       },
       body: JSON.stringify({
         success: false,
-        error: errorMessage,
+        error: "An unknown error occurred while processing the form",
       }),
     };
   }
