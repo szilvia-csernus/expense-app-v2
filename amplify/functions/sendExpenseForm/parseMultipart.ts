@@ -37,7 +37,7 @@ export async function parseMultipart(
     throw new Error("FormData is null");
   }
 
-  console.log("FormData entries:", Array.from(formData.entries()));
+  console.log("FormData keys:", Array.from(formData.keys()));
 
   const fields: Record<string, string> = {};
   const receipts: ReceiptBuffer[] = [];

@@ -65,7 +65,7 @@ export async function getChurchDetailsAndUpdateCounter(churchPK: string) {
       authMode: "identityPool",
     })) as GraphQLResult<GetChurchProfileResponse>;
 
-    console.log("GraphQL result:", JSON.stringify(result, null, 2));
+    console.log("GraphQL query succeeded");
 
     if (result.data && result.data.getExpenseApp) {
       // Transform data to match Church type
@@ -99,7 +99,7 @@ export async function getChurchDetailsAndUpdateCounter(churchPK: string) {
       `;
 
       // Update the counter
-      const updateResult = (await client.graphql({
+      (await client.graphql({
         query: updateMutation,
         variables: {
           PK: churchPK,
@@ -109,7 +109,7 @@ export async function getChurchDetailsAndUpdateCounter(churchPK: string) {
         authMode: "identityPool",
       })) as GraphQLResult<UpdateChurchProfileResponse>;
 
-      console.log("Update result:", JSON.stringify(updateResult, null, 2));
+      console.log("Counter updated to:", newCounter);
 
       return {
         ...churchData,
