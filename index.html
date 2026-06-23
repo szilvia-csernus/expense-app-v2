@@ -28,7 +28,10 @@
       rel="preload"
       as="style"
       href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,500;1,500&family=Quicksand:wght@300..700&display=swap"
-      onload="this.onload=null;this.rel='stylesheet'"
+      onload="
+        this.onload = null;
+        this.rel = 'stylesheet';
+      "
     />
     <noscript>
       <link
@@ -52,17 +55,6 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Font loading script -->
-    <script>
-      // Remove .font-loading class once fonts are loaded
-      if ("fonts" in document) {
-        Promise.all([
-          document.fonts.load('500 1em "Josefin Sans"'),
-          document.fonts.load("300 1em Quicksand"),
-        ]).then(() => {
-          document.documentElement.classList.remove("font-loading");
-        });
-      }
-    </script>
+    <script src="/font-loader.js"></script>
   </body>
 </html>
