@@ -11,14 +11,14 @@ const schema = a
           .string()
           .required()
           .authorization((allow) => [
-            allow.guest().to(["read", "update"]),
+            allow.guest().to(["read"]),
             allow.authenticated().to(["create", "read", "update", "delete"]),
           ]),
         SK: a // Sort Key: e.g. PROFILE or COSTPURPOSE#22
           .string()
           .required()
           .authorization((allow) => [
-            allow.guest().to(["read", "update"]),
+            allow.guest().to(["read"]),
             allow.authenticated().to(["create", "read", "update", "delete"]),
           ]),
         churchShortName: a
@@ -42,7 +42,7 @@ const schema = a
         claimsCounter: a
           .integer()
           .authorization((allow) => [
-            allow.guest().to(["read", "update"]),
+            allow.guest().to(["read"]),
             allow.authenticated().to(["create", "read", "update", "delete"]),
           ]),
         financeContactName: a
@@ -72,12 +72,12 @@ const schema = a
       })
       .identifier(["PK", "SK"])
       .authorization((allow) => [
-        allow.guest().to(["read", "update"]),
+        allow.guest().to(["read"]),
         allow.authenticated().to(["create", "read", "update", "delete"]),
       ]),
   })
   .authorization((allow) => [
-    allow.guest().to(["read", "update"]), // For frontend reads
+    allow.guest().to(["read"]), // For frontend reads
     allow.authenticated().to(["create", "read", "update", "delete"]), // For authenticated users
     allow.resource(sendExpenseFormFunction).to(["query", "mutate"]), // Allow Lambda at schema level
   ]);
