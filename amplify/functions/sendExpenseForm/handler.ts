@@ -17,6 +17,7 @@ import { validateForm } from "./validateForm";
 import { getChurchDetailsAndUpdateCounter } from "./getChurchDetailsAndUpdateCounter";
 import { checkMonthlyLimit } from "./checkMonthlyLimit";
 import { parseMultipart } from "./parseMultipart";
+import { verifyTurnstile } from "./verifyTurnstile";
 
 let configureAmplifyPromise: Promise<void> | undefined;
 
@@ -100,19 +101,30 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     }
   }
 
-  // Monthly limit
-  if (!(await checkMonthlyLimit())) {
-    return {
-      statusCode: 429,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: "Monthly limit exceeded" }),
-    };
-  }
-
   // Parse multipart form data
 
   try {
     const { fields, receipts } = await parseMultipart(event);
+
+    // Verify the Cloudflare Turnstile token before doing any further work.
+    // This runs before the monthly-limit counter so bots can't exhaust it.
+    const sourceIp = event.requestContext?.identity?.sourceIp;
+    if (!(await verifyTurnstile(fields.turnstileToken, sourceIp))) {
+      return {
+        statusCode: 403,
+        headers: corsHeaders,
+        body: JSON.stringify({ error: "Human verification failed" }),
+      };
+    }
+
+    // Monthly limit
+    if (!(await checkMonthlyLimit())) {
+      return {
+        statusCode: 429,
+        headers: corsHeaders,
+        body: JSON.stringify({ error: "Monthly limit exceeded" }),
+      };
+    }
 
     // Extract form data from the event
     const formData = JSON.parse(fields.formData);

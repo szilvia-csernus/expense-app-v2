@@ -1,6 +1,7 @@
 import classes from "./Form.module.css";
 
 import { useState, useEffect, useRef } from "react";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import useInput from "../Hooks/use-input";
 import { PrimaryButton } from "./Buttons";
 import FileUploader from "./FileUploader";
@@ -41,6 +42,28 @@ const CostForm = () => {
   const ibanInputRef = useRef<HTMLInputElement | null>(null);
   const accountNameInputRef = useRef<HTMLInputElement | null>(null);
   const fileSectionRef = useRef<HTMLDivElement | null>(null);
+
+  // Cloudflare Turnstile: invisible challenge executed on submit.
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const tokenResolverRef = useRef<{
+    resolve: (token: string) => void;
+    reject: (reason?: unknown) => void;
+  } | null>(null);
+
+  // Returns a promise that resolves with a fresh Turnstile token, or rejects
+  // if the challenge errors or expires. Called by send() after local checks.
+  const getTurnstileToken = (): Promise<string> =>
+    new Promise((resolve, reject) => {
+      // In Cypress E2E runs, bypass the external Turnstile challenge so tests
+      // stay deterministic and don't depend on Cloudflare being reachable.
+      if (typeof window !== "undefined" && "Cypress" in window) {
+        resolve("cypress-e2e-token");
+        return;
+      }
+      tokenResolverRef.current = { resolve, reject };
+      turnstileRef.current?.reset();
+      turnstileRef.current?.execute();
+    });
 
   const {
     value: nameValue,
@@ -237,7 +260,14 @@ const CostForm = () => {
       if (isIOS && !navigator.onLine) {
         noNetworkError(dispatch);
       } else {
-        send(dispatch, formData, churchPK, resetForm, resetFileUploader);
+        send(
+          dispatch,
+          formData,
+          churchPK,
+          resetForm,
+          resetFileUploader,
+          getTurnstileToken
+        );
       }
 
       dispatch(formActions.resetSubmitting());
@@ -556,6 +586,28 @@ const CostForm = () => {
                 Invalid name.
               </div>
             </fieldset>
+
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              options={{ execution: "execute", size: "invisible" }}
+              onSuccess={(token) => {
+                tokenResolverRef.current?.resolve(token);
+                tokenResolverRef.current = null;
+              }}
+              onError={() => {
+                tokenResolverRef.current?.reject(
+                  new Error("turnstile-error")
+                );
+                tokenResolverRef.current = null;
+              }}
+              onExpire={() => {
+                tokenResolverRef.current?.reject(
+                  new Error("turnstile-expired")
+                );
+                tokenResolverRef.current = null;
+              }}
+            />
 
             <br />
             <div className={classes.footer}>

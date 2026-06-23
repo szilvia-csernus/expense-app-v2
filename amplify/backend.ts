@@ -149,6 +149,7 @@ backend.sendExpenseFormFunction.resources.lambda.addToRolePolicy(
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/gmail/refresh-token`,
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/request-count`,
       `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/notification-email`,
+      `arn:aws:ssm:${region}:${accountId}:parameter/expense-app/turnstile/secret-key`,
     ],
   })
 );
@@ -205,6 +206,10 @@ backend.sendExpenseFormFunction.addEnvironment(
 backend.sendExpenseFormFunction.addEnvironment(
   "GMAIL_REFRESH_TOKEN",
   "/expense-app/gmail/refresh-token"
+);
+backend.sendExpenseFormFunction.addEnvironment(
+  "TURNSTILE_SECRET_KEY",
+  "/expense-app/turnstile/secret-key"
 );
 backend.sendExpenseFormFunction.addEnvironment("AWS_APP_ID", appId || "");
 backend.sendExpenseFormFunction.addEnvironment("AWS_BRANCH", branch || "dev");

@@ -70,6 +70,74 @@ describe("Form Submission", () => {
     cy.contains(/error|failed/i, { timeout: 10000 }).should("be.visible");
   });
 
+  it("should attach a Turnstile token to the submission", () => {
+    cy.intercept("POST", "**/submit-expense", (req) => {
+      const bodyStr =
+        typeof req.body === "string"
+          ? req.body
+          : new TextDecoder().decode(req.body as ArrayBuffer);
+      expect(bodyStr).to.include("turnstileToken");
+      expect(bodyStr).to.include("cypress-e2e-token");
+      req.reply({ statusCode: 200, body: { message: "Success" } });
+    }).as("submitForm");
+
+    cy.fillExpenseForm({
+      name: "Test User",
+      email: "test@example.com",
+      date: "2024-01-15",
+      description: "Test expense",
+      purpose: "Events",
+      total: "100.00",
+    });
+
+    cy.get('input[type="file"]').selectFile(
+      {
+        contents: Cypress.Buffer.from("fake image content"),
+        fileName: "receipt.png",
+        mimeType: "image/png",
+      },
+      { force: true }
+    );
+
+    cy.contains("button", "Submit").click();
+
+    cy.wait("@submitForm");
+    cy.contains("Thank You!", { timeout: 10000 }).should("be.visible");
+  });
+
+  it("should show an error when human verification is rejected", () => {
+    cy.intercept("POST", "**/submit-expense", {
+      statusCode: 403,
+      body: { error: "Human verification failed" },
+    }).as("submitForm");
+
+    cy.fillExpenseForm({
+      name: "Test User",
+      email: "test@example.com",
+      date: "2024-01-15",
+      description: "Test expense",
+      purpose: "Events",
+      total: "100.00",
+    });
+
+    cy.get('input[type="file"]').selectFile(
+      {
+        contents: Cypress.Buffer.from("fake image content"),
+        fileName: "receipt.png",
+        mimeType: "image/png",
+      },
+      { force: true }
+    );
+
+    cy.contains("button", "Submit").click();
+
+    cy.wait("@submitForm");
+
+    // The 403 should surface as an error to the user, not a success.
+    cy.contains(/error|failed/i, { timeout: 10000 }).should("be.visible");
+    cy.contains("Thank You!").should("not.exist");
+  });
+
   it("should clear form after successful submission", () => {
     cy.intercept("POST", "**/submit-expense", {
       statusCode: 200,

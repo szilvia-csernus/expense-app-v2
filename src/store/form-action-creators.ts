@@ -59,8 +59,17 @@ const wrongImageError = (dispatch: AppDispatch) => {
   handleError(
     dispatch,
     "ERROR",
-    `Unfortunately, we were unable to process the file you've uploaded. 
+    `Unfortunately, we were unable to process the file you've uploaded.
         Please try another file format!`
+  );
+};
+
+/** Error message when the human-verification (Turnstile) check fails. */
+const verificationError = (dispatch: AppDispatch) => {
+  handleError(
+    dispatch,
+    "VERIFICATION FAILED",
+    `We couldn't verify that you're human. Please try submitting the form again.`
   );
 };
 
@@ -71,7 +80,8 @@ export const send = async (
   formData: FormData,
   churchPK: string,
   resetForm: () => void,
-  resetFileUploader: () => void
+  resetFileUploader: () => void,
+  getTurnstileToken: () => Promise<string>
 ) => {
   dispatch(formActions.setSending());
 
@@ -120,9 +130,22 @@ export const send = async (
       return;
     }
 
+    // All frontend checks have passed — now run the human-verification
+    // (Turnstile) challenge just before submitting, so we don't spend a
+    // token on a submission that would have failed local validation.
+    let turnstileToken: string;
+    try {
+      turnstileToken = await getTurnstileToken();
+    } catch (error) {
+      console.error("Turnstile challenge failed:", error);
+      verificationError(dispatch);
+      return;
+    }
+
     const apiFormData = new FormData();
     apiFormData.append("formData", JSON.stringify(formDataObj));
     apiFormData.append("churchPK", churchPK);
+    apiFormData.append("turnstileToken", turnstileToken);
 
     console.log("Formdata and churchPK appended to apiFormData");
 
