@@ -2,6 +2,10 @@ import { auth, gmail } from "@googleapis/gmail";
 import type { Church, EmailAttachment, ExpenseFormData } from "./types";
 import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
 
+function sanitizeHeader(value: string): string {
+  return value.replace(/[\r\n]/g, "");
+}
+
 const ssmClient = new SSMClient({ region: process.env.AWS_REGION });
 
 // Load Gmail credentials from Parameter Store using the parameter names from environment variables
@@ -152,8 +156,8 @@ export async function sendEmails(
     await sendEmail(
       credentials,
       churchData.financeEmail,
-      formData.email,
-      `Expense Form ${churchData.claimsCounter} ${formData.description} ${formData.purpose}`,
+      sanitizeHeader(formData.email),
+      `Expense Form ${churchData.claimsCounter} ${sanitizeHeader(formData.description)} ${sanitizeHeader(formData.purpose)}`,
       messageToSubmitter,
       null,
       churchData.financeEmail,
@@ -164,14 +168,14 @@ export async function sendEmails(
       credentials,
       churchData.financeEmail,
       churchData.financeEmail,
-      `EF ${churchData.claimsCounter} ${formData.description} ${formData.purpose}`,
+      `EF ${churchData.claimsCounter} ${sanitizeHeader(formData.description)} ${sanitizeHeader(formData.purpose)}`,
       messageToFinance,
       {
         filename: `EF${churchData.claimsCounter}.pdf`,
         content: pdfBuffer.toString("base64"),
         contentType: "application/pdf",
       },
-      formData.email,
+      sanitizeHeader(formData.email),
     );
 
     // Email template back to finance team
@@ -179,10 +183,10 @@ export async function sendEmails(
       credentials,
       churchData.financeEmail,
       churchData.financeEmail,
-      `Expense Form ${churchData.claimsCounter} ${formData.description} ${formData.purpose}`,
+      `Expense Form ${churchData.claimsCounter} ${sanitizeHeader(formData.description)} ${sanitizeHeader(formData.purpose)}`,
       messageTemplate,
       null,
-      formData.email,
+      sanitizeHeader(formData.email),
     );
 
     console.log(`Email sent for expense form ${churchData.claimsCounter}`);
