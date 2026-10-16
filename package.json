@@ -46,7 +46,7 @@
     "@vitejs/plugin-react": "^4.6.0",
     "aws-cdk-lib": "^2.189.1",
     "constructs": "^10.4.2",
-    "cypress": "^15.5.0",
+    "cypress": "^15.21.1",
     "dotenv": "^17.3.1",
     "esbuild": "^0.25.6",
     "eslint": "^9.30.1",
